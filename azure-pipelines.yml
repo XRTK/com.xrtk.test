@@ -8,9 +8,9 @@ resources:
       endpoint: XRTK
 
 variables:
-  project.name: 'XRTK.ProjectName'
+  project.name: 'XRTK.Test'
   project.upmSha: ''
-  package.name: 'com.xrtk.projectname'
+  package.name: 'com.xrtk.test'
   package.version: ''
   EditorPath: ''
   LogDirectory: ''
@@ -33,13 +33,13 @@ pr:
   paths:
     include:
     - azure-pipelines.yml
-    - XRTK.ProjectName/*
+    - XRTK.Test/*
     - Submodules/*
     exclude:
       - '*'
-      - XRTK.ProjectName/Packages/com.xrtk.projectname/package.json
-      - XRTK.ProjectName/Packages/com.xrtk.projectname/README.md
-      - XRTK.ProjectName/Packages/com.xrtk.projectname/LICENSE.md
+      - XRTK.Test/Packages/com.xrtk.test/package.json
+      - XRTK.Test/Packages/com.xrtk.test/README.md
+      - XRTK.Test/Packages/com.xrtk.test/LICENSE.md
 
 trigger:
   batch: true
@@ -49,13 +49,13 @@ trigger:
   paths:
     include:
       - azure-pipelines.yml
-      - XRTK.ProjectName/*
+      - XRTK.Test/*
       - Submodules/*
     exclude:
       - '*'
-      - XRTK.ProjectName/Packages/com.xrtk.projectname/package.json
-      - XRTK.ProjectName/Packages/com.xrtk.projectname/README.md
-      - XRTK.ProjectName/Packages/com.xrtk.projectname/LICENSE.md
+      - XRTK.Test/Packages/com.xrtk.test/package.json
+      - XRTK.Test/Packages/com.xrtk.test/README.md
+      - XRTK.Test/Packages/com.xrtk.test/LICENSE.md
 
 extends:
   template: common.yml@pipeline_repo

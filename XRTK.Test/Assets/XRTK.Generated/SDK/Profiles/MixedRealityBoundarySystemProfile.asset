@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50d0c2910ab4e8a9d14709c5f17506e, type: 3}
+  m_Name: MixedRealityBoundarySystemProfile
+  m_EditorClassIdentifier: 
+  configurations:
+  - instancedType:
+      reference: 8ef0cab5-a37c-4912-ad5e-1e57e92a314d
+    name: Oculus Boundary Data Provider
+    priority: 3
+    platformEntries:
+      runtimePlatforms:
+      - reference: c838c4f5-a87e-48c7-8742-09a4d85fc3bc
+      - reference: db1acc26-ec8d-4bc6-afca-c51351b2da2e
+    profile: {fileID: 0}
+  showBoundary: 0
+  boundaryHeight: 3
+  boundaryMaterial: {fileID: 0}
+  physicsLayer: 2
+  showFloor: 1
+  floorMaterial: {fileID: 2100000, guid: cff739f75e6f4d2aa27638b66200ef95, type: 2}
+  showWalls: 0
+  wallMaterial: {fileID: 0}
+  showCeiling: 0
+  ceilingMaterial: {fileID: 0}
