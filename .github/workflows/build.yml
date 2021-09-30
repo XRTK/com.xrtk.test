@@ -48,7 +48,7 @@ jobs:
           if (Test-Path -Path $logDirectory) {
             Remove-Item $logDirectory -Force -Recurse
           }
-        shell: pwsh
+        shell: powershell
 
   build:
     needs: validate
@@ -86,7 +86,7 @@ jobs:
             Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip
             Remove-Item $artifacts -Force -Recurse
           }
-        shell: pwsh
+        shell: powershell
 
       - uses: actions/upload-artifact@v2
         name: Upload Artifacts
