@@ -96,7 +96,7 @@ jobs:
           path: '${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip'
 
   publish:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && github.ref == 'refs/heads/main' }}
     needs: build
     runs-on:  ubuntu-latest
     steps:
@@ -105,6 +105,7 @@ jobs:
           fetch-depth: 0
 
       - name: upm subtree split
+        if: ${{ github.event_name == 'push' }}
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           $packageDir = $packageDir.replace('${{ github.workspace }}/','')
