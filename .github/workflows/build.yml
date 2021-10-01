@@ -22,10 +22,9 @@ jobs:
         with:
           submodules: true
 
-      - run: echo ${{ github.ref }}
-      - run: echo ${{ github.base.ref }}
-      - run: echo ${{ toJSON(github) }}
-
+      - run: echo '${{ github.ref }}'
+      - run: echo '${{ github.base.ref }}'
+      - run: echo '${{ toJSON(github) }}'
       # - id: unity-validate
       #   name: Unity Editor Validation
       #   uses: xrtk/unity-validate@main
