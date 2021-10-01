@@ -22,6 +22,10 @@ jobs:
         with:
           submodules: true
 
+      - run: echo ${{ github.ref }}
+      - run: echo ${{ github.base.ref }}
+      - run: echo ${{ toJSON(github) }}
+
       - id: unity-validate
         name: Unity Editor Validation
         uses: xrtk/unity-validate@main
@@ -50,50 +54,50 @@ jobs:
           }
         shell: powershell
 
-  build:
-    needs: validate
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        build-target: [StandaloneWindows64, WSAPlayer, Android, Lumin]
-      max-parallel: 1
+  # build:
+  #   needs: validate
+  #   runs-on: self-hosted
+  #   strategy:
+  #     matrix:
+  #       build-target: [StandaloneWindows64, WSAPlayer, Android, Lumin]
+  #     max-parallel: 1
 
-    steps:
-      - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Tests'
-        with:
-          name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ needs.validate.outputs.editor-path }}'
-          project-path: '${{ needs.validate.outputs.project-path }}'
-          build-target: '${{ matrix.build-target }}'
-          args: '-batchmode -runEditorTests'
+  #   steps:
+  #     - uses: xrtk/unity-action@main
+  #       name: '${{ matrix.build-target }}-Tests'
+  #       with:
+  #         name: '${{ matrix.build-target }}-Tests'
+  #         editor-path: '${{ needs.validate.outputs.editor-path }}'
+  #         project-path: '${{ needs.validate.outputs.project-path }}'
+  #         build-target: '${{ matrix.build-target }}'
+  #         args: '-batchmode -runEditorTests'
 
-      - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Build'
-        with:
-          name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ needs.validate.outputs.editor-path }}'
-          project-path: '${{ needs.validate.outputs.project-path }}'
-          build-target: '${{ matrix.build-target }}'
-          args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
+  #     - uses: xrtk/unity-action@main
+  #       name: '${{ matrix.build-target }}-Build'
+  #       with:
+  #         name: '${{ matrix.build-target }}-Build'
+  #         editor-path: '${{ needs.validate.outputs.editor-path }}'
+  #         project-path: '${{ needs.validate.outputs.project-path }}'
+  #         build-target: '${{ matrix.build-target }}'
+  #         args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
-      - name: Zip Artifacts
-        if: always()
-        run: |
-          $artifacts = "${{ needs.validate.outputs.project-path }}\Builds"
+  #     - name: Zip Artifacts
+  #       if: always()
+  #       run: |
+  #         $artifacts = "${{ needs.validate.outputs.project-path }}\Builds"
 
-          if (Test-Path -Path $artifacts) {
-            Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip
-            Remove-Item $artifacts -Force -Recurse
-          }
-        shell: powershell
+  #         if (Test-Path -Path $artifacts) {
+  #           Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip
+  #           Remove-Item $artifacts -Force -Recurse
+  #         }
+  #       shell: powershell
 
-      - uses: actions/upload-artifact@v2
-        name: Upload Artifacts
-        if: always()
-        with:
-          name: '${{ matrix.build-target }}-Artifacts'
-          path: '${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip'
+  #     - uses: actions/upload-artifact@v2
+  #       name: Upload Artifacts
+  #       if: always()
+  #       with:
+  #         name: '${{ matrix.build-target }}-Artifacts'
+  #         path: '${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip'
 
   publish:
     if: ${{ github.ref == 'refs/heads/main' || github.base.ref == 'refs/heads/main' }}
