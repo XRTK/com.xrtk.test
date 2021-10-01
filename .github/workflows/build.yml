@@ -107,7 +107,7 @@ jobs:
           fetch-depth: 0
 
       - run: |
-          $isPreview = '${{ needs.publish.outputs.isPreview }}'
+          $isPreview = '${{ 'needs.publish.outputs.isPreview' }}'
           $packageFile = "${{ '**/Packages/**/package.json' }}"
 
           if ( -not (Test-Path -Path $packageFile) ) {
