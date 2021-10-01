@@ -110,7 +110,8 @@ jobs:
 
           $packageInfo = (Get-Content $packageJsonFile -Raw) | ConvertFrom-Json
           Write-Host "Detected Project Version: $packageInfo.version"
-      shell: pwsh
+        working-directory: ${{ github.workspace }}
+        shell: pwsh
 
       # - name: upm subtree split
       #   if: ${{ github.event_name == 'push' }}
