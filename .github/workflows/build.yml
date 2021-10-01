@@ -105,7 +105,7 @@ jobs:
           fetch-depth: 0
 
       - run: |
-          $packageFilePath = '${{ **/Packages/**/package.json }}'
+          $packageFilePath = "${{ '**/Packages/**/package.json' }}"
           Write-Host $packageFilePath
 
           $packageInfo = (Get-Content $packageJsonFile -Raw) | ConvertFrom-Json
