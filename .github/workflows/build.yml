@@ -107,9 +107,9 @@ jobs:
       - run: |
           $packageFilePath = '${{ **/Packages/**/package.json }}'
           Write-Host $packageFilePath
-          $packageInfo = (Get-Content $packageJsonFile -Raw) | ConvertFrom-Json
 
-          Write-Host "Detected Project Version:" $packageInfo.version
+          $packageInfo = (Get-Content $packageJsonFile -Raw) | ConvertFrom-Json
+          Write-Host Detected Project Version: $packageInfo.version
       shell: pwsh
 
       # - name: upm subtree split
