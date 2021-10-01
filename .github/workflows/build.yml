@@ -23,7 +23,7 @@ jobs:
           submodules: true
 
       - run: echo '${{ github.ref }}'
-      - run: echo '${{ github.base.ref }}'
+      - run: echo '${{ github.base_ref }}'
       - run: echo '${{ toJSON(github) }}'
       # - id: unity-validate
       #   name: Unity Editor Validation
