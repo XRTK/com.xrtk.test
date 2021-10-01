@@ -99,15 +99,13 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
     needs: validate
     runs-on:  ubuntu-latest
-    outputs:
-      isPreview: ${{ github.base_ref == 'main' }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
       - run: |
-          $isPreview = '${{ needs.publish.outputs.isPreview }}'
+          $isPreview = '${{ github.base_ref == 'main' }}'
           $packageFile = "${{ '**/Packages/**/package.json' }}"
 
           if ( -not (Test-Path -Path $packageFile) ) {
