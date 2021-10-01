@@ -109,7 +109,7 @@ jobs:
           Write-Host $packageFilePath
 
           $packageInfo = (Get-Content $packageJsonFile -Raw) | ConvertFrom-Json
-          Write-Host Detected Project Version: $packageInfo.version
+          Write-Host "Detected Project Version: $packageInfo.version"
       shell: pwsh
 
       # - name: upm subtree split
