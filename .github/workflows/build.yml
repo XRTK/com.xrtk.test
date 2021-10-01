@@ -114,7 +114,11 @@ jobs:
 
           $packageInfo = (Get-Content $packageFile -Raw) | ConvertFrom-Json
           Write-Host "Detected Project Version:" $packageInfo.version
-          gh release list -L 1
+          $lastRelease = gh release list -L 1
+
+          if ([string]::IsNullOrEmpty($lastRelease)) {
+            Write-Host "New Release needed"
+          }
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
