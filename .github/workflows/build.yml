@@ -105,10 +105,15 @@ jobs:
           fetch-depth: 0
 
       - run: |
-          $packageFilePath = "${{ '**/Packages/**/package.json' }}"
-          Write-Host $packageFilePath
+          $packageFile = "${{ '**/Packages/**/package.json' }}"
+          Write-Host $packageFile
 
-          $packageInfo = (Get-Content $packageJsonFile -Raw) | ConvertFrom-Json
+          if ( -not (Test-Path -Path $packageFile) ) {
+            Write-Error "Failed to find a valid project manifest at `"$versionFile`""
+            exit 1
+          }
+
+          $packageInfo = (Get-Content $packageFile -Raw) | ConvertFrom-Json
           Write-Host "Detected Project Version: $packageInfo.version"
         working-directory: ${{ github.workspace }}
         shell: pwsh
