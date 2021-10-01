@@ -106,7 +106,6 @@ jobs:
 
       - run: |
           $packageFile = "${{ '**/Packages/**/package.json' }}"
-          Write-Host $packageFile
 
           if ( -not (Test-Path -Path $packageFile) ) {
             Write-Error "Failed to find a valid project manifest at `"$versionFile`""
@@ -115,8 +114,11 @@ jobs:
 
           $packageInfo = (Get-Content $packageFile -Raw) | ConvertFrom-Json
           Write-Host "Detected Project Version:" $packageInfo.version
-        working-directory: ${{ github.workspace }}
+          gh release list -L 1
         shell: pwsh
+        working-directory: ${{ github.workspace }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: upm subtree split
       #   if: ${{ github.event_name == 'push' }}
