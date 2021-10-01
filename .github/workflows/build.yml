@@ -114,7 +114,7 @@ jobs:
           }
 
           $packageInfo = (Get-Content $packageFile -Raw) | ConvertFrom-Json
-          Write-Host "Detected Project Version: $packageInfo.version"
+          Write-Host "Detected Project Version:" $packageInfo.version
         working-directory: ${{ github.workspace }}
         shell: pwsh
 
