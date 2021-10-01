@@ -99,12 +99,15 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
     needs: validate
     runs-on:  ubuntu-latest
+    outputs:
+      isPreview: ${{ github.base_ref == 'main' }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
       - run: |
+          $isPreview = '${{ publish.outputs.isPreview }}'
           $packageFile = "${{ '**/Packages/**/package.json' }}"
 
           if ( -not (Test-Path -Path $packageFile) ) {
@@ -118,6 +121,7 @@ jobs:
 
           if ([string]::IsNullOrEmpty($lastRelease)) {
             Write-Host "New Release needed"
+            Write-Host "Is Preview: $isPreview"
           }
         shell: pwsh
         working-directory: ${{ github.workspace }}
