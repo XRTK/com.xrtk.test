@@ -134,15 +134,18 @@ jobs:
               $preview = 1
             }
 
-            $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
+            $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
           } else {
-            $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
           }
 
-          Write-Host $packageInfo.version -> $packageSemVer.ToString()
-          $packageInfo.version = $packageSemVer.ToString()
+          if ($newPackageSemVer -gt $packageSemVer) {
+            Write-Host $packageInfo.version -> $newPackageSemVer.ToString()
+            $packageInfo.version = $newPackageSemVer.ToString()
+          }
+
           Write-Host "::set-output name=package-version::$packageSemVer"
-          $packageInfo | ConvertTo-Json | Set-Content $packageJsonFile
+          $packageInfo | ConvertTo-Json | Set-Content $packageFile
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
