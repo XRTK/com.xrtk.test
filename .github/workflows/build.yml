@@ -99,12 +99,17 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
     needs: validate
     runs-on:  ubuntu-latest
+    outputs:
+      package-version: ${{ steps.validate-version.outputs.package-version }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - run: |
+      - id: validate-version
+        name: Validate Package Version
+        run: |
+          "Powershell version $PSVersionTable.PSVersion"
           $isPreview = '${{ github.base_ref == 'main' }}'
           $packageFile = "${{ '**/Packages/**/package.json' }}"
 
@@ -117,14 +122,34 @@ jobs:
           Write-Host "Detected Project Version:" $packageInfo.version
           $lastRelease = gh release list -L 1
 
+          $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageInfo.version)
+
           if ([string]::IsNullOrEmpty($lastRelease)) {
             Write-Host "New Release needed"
-            Write-Host "Is Preview: $isPreview"
           }
+
+          if ($isPreview -eq 'true') {
+            if ($packageSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
+              $preview = ([int]$Matches.preview) + 1
+            } else {
+              $preview = 1
+            }
+
+            $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, 'preview.$preview')
+          } else {
+            $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+          }
+
+          Write-Host "$packageInfo.version -> $packageSemVer.ToString()"
+          $packageInfo.version = $packageSemVer.ToString()
+          Write-Host "::set-output name=package-version::$packageSemVer"
+          $packageInfo | ConvertTo-Json | Set-Content $packageJsonFile
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: echo '${{ steps.validate-version.outputs.package-version }}'
 
       # - name: upm subtree split
       #   if: ${{ github.event_name == 'push' }}
