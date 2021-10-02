@@ -128,6 +128,7 @@ jobs:
           }
 
           if ($isPreview -eq 'true') {
+            Write-Host preview build detected
             if ($packageSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
               $preview = ([int]$Matches.preview) + 1
             } else {
@@ -136,6 +137,7 @@ jobs:
 
             $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
           } else {
+            Write-Host release build detected
             $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
           }
 
