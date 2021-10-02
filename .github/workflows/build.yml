@@ -121,7 +121,7 @@ jobs:
           Write-Host "Detected Project Version:" $packageInfo.version
           $lastRelease = gh release list -L 1
 
-          $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageInfo.version)
+          $packageSemVer = [System.Management.Automation.SemanticVersion]$packageInfo.version
 
           if ([string]::IsNullOrEmpty($lastRelease)) {
             Write-Host "New Release needed"
