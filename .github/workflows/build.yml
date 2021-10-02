@@ -100,7 +100,7 @@ jobs:
     needs: validate
     runs-on:  ubuntu-latest
     outputs:
-      package-version: ${{ steps.validate-version.outputs.package-version }}
+      upm-package-version: ${{ steps.validate-version.outputs.upm-package-version }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -110,7 +110,7 @@ jobs:
         name: Validate Package Version
         run: |
           $isPreview = '${{ github.base_ref == 'main' }}'
-          $packageFile = "${{ '**/Packages/**/package.json' }}"
+          $packageFile = '**/Packages/**/package.json'
 
           if ( -not (Test-Path -Path $packageFile) ) {
             Write-Error "Failed to find a valid project manifest at `"$versionFile`""
@@ -150,14 +150,23 @@ jobs:
           }
 
           $version = $packageInfo.version
-          Write-Host "::set-output name=package-version::$version"
+          Write-Host "::set-output name=upm-package-version::$version"
           $packageInfo | ConvertTo-Json | Set-Content $packageFile
+
+          git status
+          git fetch origin main
+          git pull origin main
+          git add '**/Packages/**/package.json'
+          git status
+          $sha = '${{ github.sha }}'
+          git commit -m "[skip ci] $version@$sha"
+          git push origin '${{ github.ref == 'refs/heads/main' }}'
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: echo '${{ steps.validate-version.outputs.package-version }}'
+      - run: echo '${{ steps.validate-version.outputs.upm-package-version }}'
 
       # - name: upm subtree split
       #   if: ${{ github.event_name == 'push' }}
