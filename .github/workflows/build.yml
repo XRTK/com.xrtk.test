@@ -109,7 +109,6 @@ jobs:
       - id: validate-version
         name: Validate Package Version
         run: |
-          $PSVersionTable.PSVersion
           $isPreview = '${{ github.base_ref == 'main' }}'
           $packageFile = "${{ '**/Packages/**/package.json' }}"
 
@@ -135,7 +134,7 @@ jobs:
               $preview = 1
             }
 
-            $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, 'preview.$preview')
+            $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
           } else {
             $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
           }
