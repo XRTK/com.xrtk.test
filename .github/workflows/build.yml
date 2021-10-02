@@ -136,16 +136,17 @@ jobs:
 
             $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
             Write-Host Preview build calculated: $newPackageSemVer
+            $packageInfo.version = $newPackageSemVer.ToString()
           } else {
             $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
             Write-Host Release build calculated: $newPackageSemVer
-          }
 
-          if ($newPackageSemVer -gt $packageSemVer) {
-            Write-Host $packageInfo.version -> $newPackageSemVer.ToString()
-            $packageInfo.version = $newPackageSemVer.ToString()
-          } else {
-            Write-Host Publishing Version: $packageInfo.version
+            if ($newPackageSemVer -gt $packageSemVer) {
+              Write-Host $packageInfo.version -> $newPackageSemVer.ToString()
+              $packageInfo.version = $newPackageSemVer.ToString()
+            } else {
+              Write-Host Publishing Version: $packageInfo.version
+            }
           }
 
           $version = $packageInfo.version
