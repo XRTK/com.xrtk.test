@@ -1,0 +1,184 @@
+name: XRTK CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches:
+      - '*'
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: self-hosted
+    outputs:
+      editor-path: ${{ steps.unity-validate.outputs.editor-path }}
+      project-path: ${{ steps.unity-validate.outputs.project-path }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - id: unity-validate
+        name: Unity Editor Validation
+        uses: xrtk/unity-validate@main
+
+      - uses: xrtk/unity-action@main
+        name: Project Validation
+        with:
+          name: 'project-validation'
+          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
+          project-path: '${{ steps.unity-validate.outputs.project-path }}'
+          args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.ValidateProject'
+
+      - uses: actions/upload-artifact@v2
+        name: Upload Artifacts
+        if: always()
+        with:
+          name: 'Validation-Results'
+          path: '${{ steps.unity-validate.outputs.project-path }}\Builds\Logs'
+
+      - name: Cleanup Job
+        run: |
+          $logDirectory = "${{ steps.unity-validate.outputs.project-path }}\Builds"
+
+          if (Test-Path -Path $logDirectory) {
+            Remove-Item $logDirectory -Force -Recurse
+          }
+        shell: powershell
+
+  # build:
+  #   needs: validate
+  #   runs-on: self-hosted
+  #   strategy:
+  #     matrix:
+  #       build-target: [StandaloneWindows64, WSAPlayer, Android, Lumin]
+  #     max-parallel: 1
+
+  #   steps:
+  #     - uses: xrtk/unity-action@main
+  #       name: '${{ matrix.build-target }}-Tests'
+  #       with:
+  #         name: '${{ matrix.build-target }}-Tests'
+  #         editor-path: '${{ needs.validate.outputs.editor-path }}'
+  #         project-path: '${{ needs.validate.outputs.project-path }}'
+  #         build-target: '${{ matrix.build-target }}'
+  #         args: '-batchmode -runEditorTests'
+
+  #     - uses: xrtk/unity-action@main
+  #       name: '${{ matrix.build-target }}-Build'
+  #       with:
+  #         name: '${{ matrix.build-target }}-Build'
+  #         editor-path: '${{ needs.validate.outputs.editor-path }}'
+  #         project-path: '${{ needs.validate.outputs.project-path }}'
+  #         build-target: '${{ matrix.build-target }}'
+  #         args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
+
+  #     - name: Zip Artifacts
+  #       if: always()
+  #       run: |
+  #         $artifacts = "${{ needs.validate.outputs.project-path }}\Builds"
+
+  #         if (Test-Path -Path $artifacts) {
+  #           Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip
+  #           Remove-Item $artifacts -Force -Recurse
+  #         }
+  #       shell: powershell
+
+  #     - uses: actions/upload-artifact@v2
+  #       name: Upload Artifacts
+  #       if: always()
+  #       with:
+  #         name: '${{ matrix.build-target }}-Artifacts'
+  #         path: '${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip'
+
+  publish:
+    if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
+    needs: validate
+    runs-on:  ubuntu-latest
+    outputs:
+      upm-package-version: ${{ steps.validate-version.outputs.upm-package-version }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - id: validate-version
+        name: Validate Package Version
+        run: |
+          $isPreview = '${{ github.base_ref == 'main' }}'
+          $packageFile = '**/Packages/**/package.json'
+
+          if ( -not (Test-Path -Path $packageFile) ) {
+            Write-Error "Failed to find a valid project manifest at `"$versionFile`""
+            exit 1
+          }
+
+          $packageInfo = (Get-Content $packageFile -Raw) | ConvertFrom-Json
+          Write-Host "Detected Project Version:" $packageInfo.version
+          $lastRelease = gh release list -L 1
+
+          $packageSemVer = [System.Management.Automation.SemanticVersion]$packageInfo.version
+
+          if ([string]::IsNullOrEmpty($lastRelease)) {
+            Write-Host "New Release needed"
+          }
+
+          if ($isPreview -eq 'true') {
+            if ($packageSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
+              $preview = ([int]$Matches.preview) + 1
+            } else {
+              $preview = 1
+            }
+
+            $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
+            Write-Host Preview build calculated: $newPackageSemVer
+            $packageInfo.version = $newPackageSemVer.ToString()
+          } else {
+            $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            Write-Host Release build calculated: $newPackageSemVer
+
+            if ($newPackageSemVer -gt $packageSemVer) {
+              Write-Host $packageInfo.version -> $newPackageSemVer.ToString()
+              $packageInfo.version = $newPackageSemVer.ToString()
+            } else {
+              Write-Host Publishing Version: $packageInfo.version
+            }
+          }
+
+          $version = $packageInfo.version
+          Write-Host "::set-output name=upm-package-version::$version"
+          $packageInfo | ConvertTo-Json | Set-Content $packageFile
+
+          Write-Host Head Ref: '${{ github.head_ref }}'
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          
+          git status
+          git fetch origin
+          git checkout -b '${{ github.head_ref }}'
+          git add '**/Packages/**/package.json'
+          git status
+          $sha = '${{ github.sha }}'
+          git commit -m "[skip ci] $version@$sha"
+          git push origin '${{ github.head_ref }}'
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: echo '${{ steps.validate-version.outputs.upm-package-version }}'
+
+      # - name: upm subtree split
+      #   if: ${{ github.event_name == 'push' }}
+      #   run: |
+      #     $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
+      #     $packageDir = $packageDir.replace('${{ github.workspace }}/','')
+      #     Write-Host $packageDir
+      #     git subtree split --prefix="$packageDir" -b upm
+      #     git push -u origin upm --force
+      #   working-directory: ${{ github.workspace }}
+      #   shell: pwsh
