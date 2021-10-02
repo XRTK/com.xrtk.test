@@ -153,6 +153,7 @@ jobs:
           Write-Host "::set-output name=upm-package-version::$version"
           $packageInfo | ConvertTo-Json | Set-Content $packageFile
 
+          Write-Host Head Ref: '${{ github.head_ref }}'
           git config user.name github-actions
           git config user.email github-actions@github.com
           
