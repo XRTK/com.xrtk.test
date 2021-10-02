@@ -97,7 +97,7 @@ jobs:
 
   publish:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
-    needs: validate
+    needs: build
     runs-on:  ubuntu-latest
     outputs:
       upm-package-version: ${{ steps.validate-version.outputs.upm-package-version }}
