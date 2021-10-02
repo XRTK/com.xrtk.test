@@ -104,6 +104,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - id: validate-version
@@ -158,8 +159,7 @@ jobs:
           git config user.email github-actions@github.com
           
           git status
-          git fetch origin
-          git checkout -b '${{ github.head_ref }}'
+          git pull
           git add '**/Packages/**/package.json'
           git status
           $sha = '${{ github.sha }}'
