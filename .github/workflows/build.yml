@@ -158,8 +158,8 @@ jobs:
           git config user.email github-actions@github.com
           
           git status
-          git fetch origin '${{ github.head_ref }}'
-          git pull origin '${{ github.head_ref }}'
+          git fetch origin
+          git checkout -b '${{ github.head_ref }}'
           git add '**/Packages/**/package.json'
           git status
           $sha = '${{ github.sha }}'
