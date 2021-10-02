@@ -128,7 +128,6 @@ jobs:
           }
 
           if ($isPreview -eq 'true') {
-            Write-Host preview build detected
             if ($packageSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
               $preview = ([int]$Matches.preview) + 1
             } else {
@@ -136,17 +135,21 @@ jobs:
             }
 
             $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch, "preview.$preview")
+            Write-Host Preview build calculated: $newPackageSemVer
           } else {
-            Write-Host release build detected
             $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            Write-Host Release build calculated: $newPackageSemVer
           }
 
           if ($newPackageSemVer -gt $packageSemVer) {
             Write-Host $packageInfo.version -> $newPackageSemVer.ToString()
             $packageInfo.version = $newPackageSemVer.ToString()
+          } else {
+            Write-Host Publishing Version: $packageInfo.version
           }
 
-          Write-Host "::set-output name=package-version::$packageSemVer"
+          $version = $packageInfo.version
+          Write-Host "::set-output name=package-version::$version"
           $packageInfo | ConvertTo-Json | Set-Content $packageFile
         shell: pwsh
         working-directory: ${{ github.workspace }}
