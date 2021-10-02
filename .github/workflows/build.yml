@@ -139,7 +139,7 @@ jobs:
             $packageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
           }
 
-          Write-Host "$packageInfo.version -> $packageSemVer.ToString()"
+          Write-Host $packageInfo.version -> $packageSemVer.ToString()
           $packageInfo.version = $packageSemVer.ToString()
           Write-Host "::set-output name=package-version::$packageSemVer"
           $packageInfo | ConvertTo-Json | Set-Content $packageJsonFile
