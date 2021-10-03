@@ -2,7 +2,8 @@ name: XRTK CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
     branches:
       - '*'
@@ -21,6 +22,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+
+      - run: echo ${{ github.ref }}
 
       - id: unity-validate
         name: Unity Editor Validation
@@ -156,13 +159,12 @@ jobs:
 
           git config user.name github-actions
           git config user.email github-actions@github.com
-          
+
           git status
           git pull
           git add '**/Packages/**/package.json'
           git status
-          $sha = '${{ github.sha }}'
-          git commit -m "[skip ci] $version@$sha"
+          git commit -m "[skip ci] $version"
           git push origin '${{ github.head_ref }}'
         shell: pwsh
         working-directory: ${{ github.workspace }}
