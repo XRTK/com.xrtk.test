@@ -23,6 +23,8 @@ jobs:
         with:
           submodules: true
 
+      - run: echo ${{ github.ref }}
+
       - id: unity-validate
         name: Unity Editor Validation
         uses: xrtk/unity-validate@main
