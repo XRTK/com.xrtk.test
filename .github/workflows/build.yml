@@ -104,6 +104,7 @@ jobs:
     steps:
       - id: target
         run: |
+          $isPreview = '${{ github.base_ref == 'main' }}'
           if ($isPreview -eq 'true') {
             $branch = '${{ github.base_ref }}'
           } else {
