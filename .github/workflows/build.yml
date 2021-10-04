@@ -106,7 +106,7 @@ jobs:
         run: |
           $isPreview = '${{ github.base_ref == 'main' }}'
           if ($isPreview -eq 'true') {
-            $branch = '${{ github.base_ref }}'
+            $branch = '${{ github.head_ref }}'
           } else {
             $branch = '${{ github.ref }}'
           }
