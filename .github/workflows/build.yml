@@ -110,7 +110,7 @@ jobs:
             $branch = '${{ github.ref }}'
           }
 
-          Write-Host "::set-output name=ref::$branch"
+          Write-Host "::set-output name=branch::$branch"
         shell: pwsh
       - uses: actions/checkout@v2
         with:
