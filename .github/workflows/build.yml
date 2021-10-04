@@ -23,8 +23,6 @@ jobs:
         with:
           submodules: true
 
-      - run: echo ${{ github.ref }}
-
       - id: unity-validate
         name: Unity Editor Validation
         uses: xrtk/unity-validate@main
@@ -58,7 +56,7 @@ jobs:
     runs-on: self-hosted
     strategy:
       matrix:
-        build-target: [StandaloneWindows64, WSAPlayer, Android, Lumin]
+        build-target: [ StandaloneWindows64, WSAPlayer, Android, Lumin ]
       max-parallel: 1
 
     steps:
@@ -102,17 +100,27 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
     needs: build
     runs-on:  ubuntu-latest
-    outputs:
-      upm-package-version: ${{ steps.validate-version.outputs.upm-package-version }}
+
     steps:
+      - id: target
+        run: |
+          if ($isPreview -eq 'true') {
+            $branch = '${{ github.base_ref }}'
+          } else {
+            $branch = '${{ github.ref }}'
+          }
+
+          Write-Host "::set-output name=ref::$branch"
+        shell: pwsh
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ steps.target.outputs.branch }}
           fetch-depth: 0
 
       - id: validate-version
         name: Validate Package Version
         run: |
+          $branch = '${{ steps.target.outputs.branch }}'
           $isPreview = '${{ github.base_ref == 'main' }}'
           $packageFile = '**/Packages/**/package.json'
 
@@ -165,7 +173,7 @@ jobs:
           git add '**/Packages/**/package.json'
           git status
           git commit -m "[skip ci] $version"
-          git push origin '${{ github.head_ref }}'
+          git push origin $branch
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
