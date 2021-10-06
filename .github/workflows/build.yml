@@ -177,7 +177,7 @@ jobs:
           git add '**/Packages/**/package.json'
           git status
           git commit -m "[skip ci] $version"
-          git push origin $branch
+          git push origin $branch --force
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
