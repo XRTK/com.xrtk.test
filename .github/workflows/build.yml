@@ -181,7 +181,6 @@ jobs:
             git add '**/Packages/**/package.json'
             git status
             git commit -m "[skip ci] $version"
-            # git push origin $branch --force
             git push https://XRTK-Build-Bot:$env:Git_Token@github.com/${{ github.repository }}.git $branch --force
             git status
           }
