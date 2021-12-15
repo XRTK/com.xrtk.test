@@ -206,7 +206,7 @@ jobs:
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           cd $packageDir
-          npm-cli-login -u coral-labs -p "$env:UPM_CREDENTIALS" -e xrtk-build-bot@xrtk.io -r http://upm.xrtk.io:4873
+          npm-cli-login -u xrtk-build-bot -p "$env:UPM_CREDENTIALS" -e xrtk-build-bot@xrtk.io -r http://upm.xrtk.io:4873
           npm publish --registry=http://upm.xrtk.io:4873
           npm logout --registry=http://upm.xrtk.io:4873
         working-directory: ${{ github.workspace }}
