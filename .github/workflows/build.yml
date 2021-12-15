@@ -168,33 +168,47 @@ jobs:
           $version = $packageInfo.version
           Write-Host "::set-output name=upm-package-version::$version"
           $packageInfo | ConvertTo-Json | Set-Content $packageFile
-          
+
           if ($isPreview -eq 'true') {
             echo "skip version push"
           } else {
-            git config user.email "XRTK-Build-Bot@users.noreply.github.com"
-            git config user.name "XRTK-Build-Bot"
             git status
             git pull
             git add '**/Packages/**/package.json'
             git status
             git commit -m "[skip ci] $version"
             git push origin $branch --force
+            git push https://XRTK-Build-Bot:$env:Git_Token@github.com/${{ github.repository }}.git $branch --force
           }
 
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: upm subtree split
-        if: ${{ github.event_name == 'push' &&  github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           $packageDir = $packageDir.replace('${{ github.workspace }}/','')
           Write-Host $packageDir
           git subtree split --prefix="$packageDir" -b upm
           git tag '${{ steps.validate-version.outputs.upm-package-version }}' upm
-          git push -u origin upm --force
+          git push https://XRTK-Build-Bot:$env:Git_Token@github.com/${{ github.repository }}.git upm '${{ steps.validate-version.outputs.upm-package-version }}' --force
         working-directory: ${{ github.workspace }}
         shell: pwsh
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+
+      - name: upm publish
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
+          cd $packageDir
+          npm-cli-login -u coral-labs -p "$env:UPM_CREDENTIALS" -e xrtk-build-bot@xrtk.io -r http://upm.xrtk.io:4873
+          npm publish --registry=http://upm.xrtk.io:4873
+          npm logout --registry=http://upm.xrtk.io:4873
+        working-directory: ${{ github.workspace }}
+        shell: pwsh
+        env:
+          UPM_CREDENTIALS: ${{ secrets.UPM_CREDENTIALS }}
