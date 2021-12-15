@@ -192,7 +192,7 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: upm subtree split
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' }}
+        if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'refs/heads/main' }}
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           $packageDir = $packageDir.replace('${{ github.workspace }}/','')
@@ -206,7 +206,7 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: upm publish
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' }}
+        if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'refs/heads/main' }}
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           cd $packageDir
