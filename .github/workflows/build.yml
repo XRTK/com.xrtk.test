@@ -146,7 +146,7 @@ jobs:
 
           if ($isPreview -eq 'true') {
             if ($packageSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
-              $preview = ([int]$Matches.preview) + 1
+              $preview = '${{ github.run_number }}'
             } else {
               $preview = 1
             }
