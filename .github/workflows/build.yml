@@ -198,6 +198,7 @@ jobs:
           git push https://XRTK-Build-Bot:$env:Git_Token@github.com/${{ github.repository }}.git upm '${{ steps.validate-version.outputs.upm-package-version }}' --force
         working-directory: ${{ github.workspace }}
         shell: pwsh
+        env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: upm publish
