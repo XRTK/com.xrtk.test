@@ -149,11 +149,7 @@ jobs:
 
           if ($isPreview -eq 'true') {
             if ($lastReleaseSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
-              if ($packageSemVer -gt $lastReleaseSemVer) {
-                $preview = 1
-              } else {
-                $preview = ([int]$Matches.preview) + 1
-              }
+              $preview = ([int]$Matches.preview) + 1
             } else {
               $preview = 1
             }
@@ -162,7 +158,13 @@ jobs:
             Write-Host Preview build calculated: $newPackageSemVer
             $packageInfo.version = $newPackageSemVer.ToString()
           } else {
-            $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            if (($lastReleaseSemVer.PreReleaseLabel -match '(?<preview>\d+)') -and
+                ($lastReleaseSemVer.Patch -eq $packageSemVer.Patch)) {
+              $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch)
+            } else {
+              $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            }
+
             Write-Host Release build calculated: $newPackageSemVer
 
             if ($newPackageSemVer -gt $packageSemVer) {
