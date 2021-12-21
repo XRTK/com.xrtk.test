@@ -162,7 +162,13 @@ jobs:
             Write-Host Preview build calculated: $newPackageSemVer
             $packageInfo.version = $newPackageSemVer.ToString()
           } else {
-            $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            if (($lastReleaseSemVer.PreReleaseLabel -match '(?<preview>\d+)') -and
+                ($lastReleaseSemVer.Patch -eq $packageSemVer.Patch)) {
+              $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch)
+            } else {
+              $newPackageSemVer = [System.Management.Automation.SemanticVersion]::New($packageSemVer.Major, $packageSemVer.Minor, $packageSemVer.Patch + 1)
+            }
+
             Write-Host Release build calculated: $newPackageSemVer
 
             if ($newPackageSemVer -gt $packageSemVer) {
