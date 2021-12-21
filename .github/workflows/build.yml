@@ -136,17 +136,24 @@ jobs:
 
           $packageInfo = (Get-Content $packageFile -Raw) | ConvertFrom-Json
           Write-Host "Detected Project Version:" $packageInfo.version
-          $lastRelease = gh release list -L 1
+          $lastRelease = $(git describe --tags $(git rev-list --tags --max-count=1))
 
           $packageSemVer = [System.Management.Automation.SemanticVersion]$packageInfo.version
+          $lastReleaseSemVer = [System.Management.Automation.SemanticVersion]$lastRelease
 
           if ([string]::IsNullOrEmpty($lastRelease)) {
-            Write-Host "New Release needed"
+            Write-Host "New Release needed $packageSemVer"
+          } else {
+            Write-Host "Last Release $lastReleaseSemVer"
           }
 
           if ($isPreview -eq 'true') {
-            if ($packageSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
-              $preview = ([int]$Matches.preview) + 1
+            if ($lastReleaseSemVer.PreReleaseLabel -match '(?<preview>\d+)') {
+              if ($packageSemVer -gt $lastReleaseSemVer) {
+                $preview = 1
+              } else {
+                $preview = ([int]$Matches.preview) + 1
+              }
             } else {
               $preview = 1
             }
@@ -173,13 +180,16 @@ jobs:
           if ($isPreview -eq 'true') {
             echo "skip version push"
           } else {
+            git config user.email "XRTK-Build-Bot@users.noreply.github.com"
+            git config user.name "XRTK-Build-Bot"
+
             git status
             git pull
             git add '**/Packages/**/package.json'
             git status
             git commit -m "[skip ci] $version"
-            # git push origin $branch --force
             git push https://XRTK-Build-Bot:$env:Git_Token@github.com/${{ github.repository }}.git $branch --force
+            git status
           }
 
         shell: pwsh
@@ -189,7 +199,7 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: upm subtree split
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           $packageDir = $packageDir.replace('${{ github.workspace }}/','')
@@ -203,7 +213,7 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: upm publish
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
         run: |
           $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
           cd $packageDir
