@@ -190,7 +190,7 @@ jobs:
             git add '**/Packages/**/package.json'
             git status
             git commit -m "[skip ci] $version"
-            git push https://XRTK-Build-Bot:$env:GITHUB_TOKEN@github.com/${{ github.repository }}.git $branch --force
+            git push https://XRTK-Build-Bot:$env:GITHUB_PAT@github.com/${{ github.repository }}.git $branch --force
             git status
           }
 
@@ -198,6 +198,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
 
       - name: upm subtree split
         if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
@@ -207,9 +208,11 @@ jobs:
           Write-Host $packageDir
           git subtree split --prefix="$packageDir" -b upm
           git tag '${{ steps.validate-version.outputs.upm-package-version }}' upm
-          git push https://XRTK-Build-Bot:$env:GITHUB_TOKEN@github.com/${{ github.repository }}.git upm '${{ steps.validate-version.outputs.upm-package-version }}' --force
+          git push https://XRTK-Build-Bot:$env:GITHUB_PAT@github.com/${{ github.repository }}.git upm '${{ steps.validate-version.outputs.upm-package-version }}' --force
         working-directory: ${{ github.workspace }}
         shell: pwsh
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
 
       - name: upm publish
         if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
