@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: {{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ [self-hosted, windows], [self-hosted, macos] ]
@@ -60,7 +60,7 @@ jobs:
 
   build:
     needs: validate
-    runs-on: {{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ [self-hosted, windows], [self-hosted, macos] ]
