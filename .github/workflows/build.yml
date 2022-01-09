@@ -17,7 +17,10 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: self-hosted
+    runs-on: {{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ [self-hosted, windows], [self-hosted, macos] ]
     outputs:
       editor-path: ${{ steps.unity-validate.outputs.editor-path }}
       project-path: ${{ steps.unity-validate.outputs.project-path }}
@@ -57,10 +60,15 @@ jobs:
 
   build:
     needs: validate
-    runs-on: self-hosted
+    runs-on: {{ matrix.os }}
     strategy:
       matrix:
-        build-target: [ StandaloneWindows64, WSAPlayer, Android, Lumin ]
+        os: [ [self-hosted, windows], [self-hosted, macos] ]
+        build-target: [ Android ]
+        include:
+          - build-target: [ StandaloneWindows64, WSAPlayer ]
+            os: [ self-hosted, windows ]
+
       max-parallel: 1
 
     steps:
