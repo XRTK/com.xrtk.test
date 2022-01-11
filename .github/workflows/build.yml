@@ -21,6 +21,11 @@ jobs:
     strategy:
       matrix:
         os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
+        build-target: [ Android ]
+        include:
+          - build-target: [ StandaloneWindows64, WSAPlayer ]
+            os: [ self-hosted, windows ]
+
     outputs:
       editor-path: ${{ steps.unity-validate.outputs.editor-path }}
       project-path: ${{ steps.unity-validate.outputs.project-path }}
@@ -42,42 +47,12 @@ jobs:
           project-path: '${{ steps.unity-validate.outputs.project-path }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.ValidateProject'
 
-      - uses: actions/upload-artifact@v2
-        name: Upload Artifacts
-        if: always()
-        with:
-          name: 'Validation-Results'
-          path: '${{ steps.unity-validate.outputs.project-path }}\Builds\Logs'
-
-      - name: Cleanup Job
-        run: |
-          $logDirectory = "${{ steps.unity-validate.outputs.project-path }}\Builds"
-
-          if (Test-Path -Path $logDirectory) {
-            Remove-Item $logDirectory -Force -Recurse
-          }
-        shell: pwsh
-
-  build:
-    needs: validate
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
-        build-target: [ Android ]
-        include:
-          - build-target: [ StandaloneWindows64, WSAPlayer ]
-            os: [ self-hosted, windows ]
-
-      max-parallel: 1
-
-    steps:
       - uses: xrtk/unity-action@main
         name: '${{ matrix.build-target }}-Tests'
         with:
           name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ needs.validate.outputs.editor-path }}'
-          project-path: '${{ needs.validate.outputs.project-path }}'
+          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
+          project-path: '${{ steps.unity-validate.outputs.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-batchmode -runEditorTests'
 
@@ -85,8 +60,8 @@ jobs:
         name: '${{ matrix.build-target }}-Build'
         with:
           name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ needs.validate.outputs.editor-path }}'
-          project-path: '${{ needs.validate.outputs.project-path }}'
+          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
+          project-path: '${{ steps.unity-validate.outputs.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
