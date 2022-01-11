@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -68,7 +68,7 @@ jobs:
       - name: Zip Artifacts
         if: always()
         run: |
-          $artifacts = "${{ needs.validate.outputs.project-path }}\Builds"
+          $artifacts = "${{ needs.unity-validate.outputs.project-path }}\Builds"
 
           if (Test-Path -Path $artifacts) {
             Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip -Force
