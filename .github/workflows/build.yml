@@ -56,8 +56,8 @@ jobs:
             exit 1
           }
 
-          $matrix | add-member -name project-path -value "$projectPath" -MemberType NoteProperty
-          $matrix | add-member -name editor-path -value "$editorPath" -MemberType NoteProperty
+          $matrix = $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty -PassThru
+          $matrix = $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty -PassThru
 
           if ([string]::IsNullOrEmpty($matrix.editor-path)) {
             echo "failed to find a valid editor path"
