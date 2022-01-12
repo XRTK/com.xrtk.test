@@ -60,8 +60,8 @@ jobs:
             echo "Project Path $projectPath"
           }
 
-          $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty
-          $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty
+          $matrix | add-member -name editor-path -value "$editorPath" -MemberType NoteProperty
+          $matrix | add-member -name project-path -value "$projectPath" -MemberType NoteProperty
 
           echo $matrix
 
