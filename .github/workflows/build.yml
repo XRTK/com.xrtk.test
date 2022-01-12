@@ -49,11 +49,15 @@ jobs:
           if ([string]::IsNullOrEmpty($editorPath)) {
             echo "failed to find a valid editor path"
             exit 1
+          } else {
+            echo "Editor Path: $editorPath"
           }
 
           if ([string]::IsNullOrEmpty($projectPath)) {
             echo "failed to find a valid project path"
             exit 1
+          } else {
+            echo "Project Path $projectPath"
           }
 
           $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty
