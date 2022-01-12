@@ -49,23 +49,33 @@ jobs:
           if ([string]::IsNullOrEmpty($editorPath)) {
             echo "failed to find a valid editor path"
             exit 1
-          } else {
-            echo "Editor Path: $editorPath"
           }
 
           if ([string]::IsNullOrEmpty($projectPath)) {
             echo "failed to find a valid project path"
             exit 1
-          } else {
-            echo "Project Path $projectPath"
           }
 
-          $matrix | add-member -name project-path -value "$projectPath" -MemberType NoteProperty
           $matrix | add-member -name editor-path -value "$editorPath" -MemberType NoteProperty
+          $matrix | add-member -name project-path -value "$projectPath" -MemberType NoteProperty
 
-          echo $matrix
+          if ([string]::IsNullOrEmpty($matrix.editor-path)) {
+            echo "failed to find a valid editor path"
+            exit 1
+          } else {
+            echo "Editor Path: $matrix.editor-path"
+          }
 
-          echo "::set-output name=matrix::$matrix"
+          if ([string]::IsNullOrEmpty($matrix.project-path)) {
+            echo "failed to find a valid project path"
+            exit 1
+          } else {
+            echo "Project Path $matrix.project-path"
+          }
+
+          $matrixJson = $matrix | ConvertTo-Json
+          echo $matrixJson
+          echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
       - uses: xrtk/unity-action@main
