@@ -23,11 +23,11 @@ jobs:
         os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
         build-target: [ Android ]
         include:
-          - build-target: [ StandaloneWindows64, WSAPlayer ]
-            os: [ self-hosted, windows ]
+          - os: [ self-hosted, windows ]
+            build-target: [ StandaloneWindows64, WSAPlayer ]
 
     outputs:
-      matrix: ${{ steps.set-build-matrix.outputs.matrix }}
+      build-matrix: ${{ steps.set-build-matrix.outputs.build-matrix }}
 
     steps:
       - uses: actions/checkout@v2
@@ -62,7 +62,7 @@ jobs:
           echo $matrix
           $matrixJson = $matrix | ConvertTo-Json
           echo $matrixJson
-          echo "::set-output name=matrix::$matrixJson"
+          echo "::set-output name=build-matrix::$matrixJson"
         shell: pwsh
 
       - uses: xrtk/unity-action@main
@@ -89,11 +89,20 @@ jobs:
           }
         shell: pwsh
 
+  validate-matrix:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: validate matrix
+        run: |
+          echo ${{ needs.validate.outputs.build-matrix }}
+        shell: pwsh
+
   build:
     needs: validate
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: '${{ fromJson(needs.validate.outputs.matrix) }}'
+      matrix: '${{ fromJson(needs.validate.outputs.build-matrix) }}'
 
       max-parallel: 1
 
@@ -119,10 +128,10 @@ jobs:
       - name: Zip Artifacts
         if: always()
         run: |
-          $artifacts = "${{ matrix.project-path }}\Builds"
+          $artifacts = "${{ matrix.project-path }}/Builds"
 
           if (Test-Path -Path $artifacts) {
-            Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip -Force
+            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip -Force
             Remove-Item $artifacts -Force -Recurse
           }
         shell: pwsh
@@ -132,7 +141,7 @@ jobs:
         if: always()
         with:
           name: '${{ matrix.build-target }}-Artifacts'
-          path: '${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip'
+          path: '${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip'
 
   publish:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
