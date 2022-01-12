@@ -15,14 +15,6 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  build-targets:
-    os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
-    build-target: [ Android ]
-    include:
-      - os: [ self-hosted, windows ]
-        build-target: [ StandaloneWindows64, WSAPlayer ]
-
 jobs:
   setup:
     runs-on: Ubuntu-latest
@@ -32,7 +24,7 @@ jobs:
       - id: setup-matrix
         name: setup build matrix
         run: |
-          $matrix = '${{ toJSON(inputs.build-targets) }}' | ConvertFrom-Json
+          $matrix = '${{ toJSON(env.build-targets) }}' | ConvertFrom-Json
           echo $matrix
 
           # TODO Combine json objects
@@ -40,6 +32,13 @@ jobs:
           $matrixJson = $matrix | ConvertTo-Json
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
+        env:
+          build-targets:
+            os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
+            build-target: [ Android ]
+            include:
+              - os: [ self-hosted, windows ]
+                build-target: [ StandaloneWindows64, WSAPlayer ]
 
   validate:
     needs: setup
