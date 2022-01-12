@@ -78,9 +78,7 @@ jobs:
           $matrix = $matrix | Add-Member -Name project-path -Value $projectPath -MemberType NoteProperty -PassThru
           $matrix = $matrix | Add-Member -Name editor-path -Value $editorPath -MemberType NoteProperty -PassThru
 
-          echo $matrix
           $matrixJson = $matrix | ConvertTo-Json
-          echo $matrixJson
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
@@ -107,6 +105,13 @@ jobs:
             Remove-Item $logDirectory -Force -Recurse
           }
         shell: pwsh
+
+  validate-matrix:
+    needs: validate
+      runs-on: Ubuntu-latest
+    steps:
+      - name: echo matrix
+        run: echo '${{ fromJSON(needs.validate.outputs.matrix) }}'
 
   build:
     needs: validate
