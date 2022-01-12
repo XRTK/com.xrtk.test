@@ -59,20 +59,6 @@ jobs:
           $matrix = $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty -PassThru
           $matrix = $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty -PassThru
 
-          if ([string]::IsNullOrEmpty($matrix.editor-path)) {
-            echo "failed to find a valid editor path"
-            exit 1
-          } else {
-            echo "Editor Path: $matrix.editor-path"
-          }
-
-          if ([string]::IsNullOrEmpty($matrix.project-path)) {
-            echo "failed to find a valid project path"
-            exit 1
-          } else {
-            echo "Project Path $matrix.project-path"
-          }
-
           $matrixJson = $matrix | ConvertTo-Json
           echo $matrixJson
           echo "::set-output name=matrix::$matrixJson"
