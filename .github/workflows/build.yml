@@ -112,6 +112,7 @@ jobs:
     steps:
       - name: echo matrix
         run: |
+          echo '${{ needs.validate.outputs.build-matrix }}'
           echo '${{ fromJSON(needs.validate.outputs.build-matrix) }}'
         shell: pwsh
 
