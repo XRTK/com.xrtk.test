@@ -30,7 +30,7 @@ jobs:
       matrix: ${{ steps.outputs.setup-matrix }}
     steps:
       - id: setup-matrix
-      - name: setup build matrix
+        name: setup build matrix
         run: |
           $matrix = '${{ toJSON(inputs.build-targets) }}' | ConvertFrom-Json
           echo $matrix
