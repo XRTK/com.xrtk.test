@@ -46,6 +46,16 @@ jobs:
           $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
           $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
 
+          if ([string]::IsNullOrEmpty($editorPath)) {
+            echo "failed to find a valid editor path"
+            exit 1
+          }
+
+          if ([string]::IsNullOrEmpty($projectPath)) {
+            echo "failed to find a valid project path"
+            exit 1
+          }
+
           $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty
           $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty
 
