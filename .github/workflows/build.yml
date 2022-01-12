@@ -15,19 +15,40 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  build-targets:
+    os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
+    build-target: [ Android ]
+    include:
+      - os: [ self-hosted, windows ]
+        build-target: [ StandaloneWindows64, WSAPlayer ]
+
 jobs:
+  setup:
+    runs-on: Ubuntu-latest
+    outputs:
+      matrix: ${{ steps.outputs.setup-matrix }}
+    steps:
+      - id: setup-matrix
+      - name: setup build matrix
+        run: |
+          $matrix = '${{ toJSON(inputs.build-targets) }}' | ConvertFrom-Json
+          echo $matrix
+
+          # TODO Combine json objects
+
+          $matrixJson = $matrix | ConvertTo-Json
+          echo "::set-output name=matrix::$matrixJson"
+        shell: pwsh
+
   validate:
+    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
-        build-target: [ Android ]
-        include:
-          - os: [ self-hosted, windows ]
-            build-target: [ StandaloneWindows64, WSAPlayer ]
+      matrix: '${{ fromJSON(needs.setup.outputs.matrix) }}'
 
     outputs:
-      build-matrix: ${{ steps.set-build-matrix.outputs.build-matrix }}
+      matrix: ${{ steps.set-build-matrix.outputs.matrix }}
 
     steps:
       - uses: actions/checkout@v2
@@ -56,13 +77,13 @@ jobs:
             exit 1
           }
 
-          $matrix = $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty -PassThru
-          $matrix = $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty -PassThru
+          $matrix = $matrix | Add-Member -Name project-path -Value $projectPath -MemberType NoteProperty -PassThru
+          $matrix = $matrix | Add-Member -Name editor-path -Value $editorPath -MemberType NoteProperty -PassThru
 
           echo $matrix
           $matrixJson = $matrix | ConvertTo-Json
           echo $matrixJson
-          echo "::set-output name=build-matrix::$matrixJson"
+          echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
       - uses: xrtk/unity-action@main
@@ -89,20 +110,11 @@ jobs:
           }
         shell: pwsh
 
-  validate-matrix:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: validate matrix
-        run: |
-          echo ${{ needs.validate.outputs.build-matrix }}
-        shell: pwsh
-
   build:
     needs: validate
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: '${{ fromJson(needs.validate.outputs.build-matrix) }}'
+      matrix: '${{ fromJSON(needs.validate.outputs.matrix) }}'
 
       max-parallel: 1
 
