@@ -21,9 +21,14 @@ jobs:
     strategy:
       matrix:
         os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
+        build-target: [ Android ]
+        include:
+          - build-target: [ StandaloneWindows64, WSAPlayer ]
+            os: [ self-hosted, windows ]
+
     outputs:
-      editor-path: ${{ steps.unity-validate.outputs.editor-path }}
-      project-path: ${{ steps.unity-validate.outputs.project-path }}
+      matrix: ${{ steps.set-build-matrix.outputs.matrix }}
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -33,6 +38,21 @@ jobs:
       - id: unity-validate
         name: Unity Editor Validation
         uses: xrtk/unity-validate@main
+
+      - id: set-build-matrix
+        name: set build matrix
+        run: |
+          $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json
+          $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
+          $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
+
+          $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty
+          $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty
+
+          echo $matrix
+
+          echo "::set-output name=matrix::$matrix"
+        shell: pwsh
 
       - uses: xrtk/unity-action@main
         name: Project Validation
@@ -62,12 +82,7 @@ jobs:
     needs: validate
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
-        build-target: [ Android ]
-        include:
-          - build-target: [ StandaloneWindows64, WSAPlayer ]
-            os: [ self-hosted, windows ]
+      matrix: ${{fromJson(needs.validate.outputs.matrix)}}
 
       max-parallel: 1
 
@@ -76,8 +91,8 @@ jobs:
         name: '${{ matrix.build-target }}-Tests'
         with:
           name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ needs.validate.outputs.editor-path }}'
-          project-path: '${{ needs.validate.outputs.project-path }}'
+          editor-path: '${{ matrix.editor-path }}'
+          project-path: '${{ matrix.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-batchmode -runEditorTests'
 
@@ -85,15 +100,15 @@ jobs:
         name: '${{ matrix.build-target }}-Build'
         with:
           name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ needs.validate.outputs.editor-path }}'
-          project-path: '${{ needs.validate.outputs.project-path }}'
+          editor-path: '${{ matrix.editor-path }}'
+          project-path: '${{ matrix.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
       - name: Zip Artifacts
         if: always()
         run: |
-          $artifacts = "${{ needs.validate.outputs.project-path }}\Builds"
+          $artifacts = "${{ matrix.project-path }}\Builds"
 
           if (Test-Path -Path $artifacts) {
             Compress-Archive -Path "$artifacts\*" -DestinationPath ${{ github.workspace }}\${{ matrix.build-target }}-Artifacts.zip -Force
