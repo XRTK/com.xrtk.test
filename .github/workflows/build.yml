@@ -59,6 +59,7 @@ jobs:
           $matrix = $matrix | add-member -name project-path -value $projectPath -MemberType NoteProperty -PassThru
           $matrix = $matrix | add-member -name editor-path -value $editorPath -MemberType NoteProperty -PassThru
 
+          echo $matrix
           $matrixJson = $matrix | ConvertTo-Json
           echo $matrixJson
           echo "::set-output name=matrix::$matrixJson"
@@ -77,11 +78,11 @@ jobs:
         if: always()
         with:
           name: 'Validation-Results'
-          path: '${{ steps.unity-validate.outputs.project-path }}\Builds\Logs'
+          path: '${{ steps.unity-validate.outputs.project-path }}/Builds/Logs'
 
       - name: Cleanup Job
         run: |
-          $logDirectory = "${{ steps.unity-validate.outputs.project-path }}\Builds"
+          $logDirectory = "${{ steps.unity-validate.outputs.project-path }}/Builds"
 
           if (Test-Path -Path $logDirectory) {
             Remove-Item $logDirectory -Force -Recurse
@@ -92,7 +93,7 @@ jobs:
     needs: validate
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{fromJson(needs.validate.outputs.matrix)}}
+      matrix: '${{ fromJson(needs.validate.outputs.matrix) }}'
 
       max-parallel: 1
 
