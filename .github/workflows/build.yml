@@ -16,35 +16,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup:
-    runs-on: Ubuntu-latest
-    outputs:
-      matrix: ${{ steps.outputs.setup-matrix }}
-    steps:
-      - id: setup-matrix
-        name: setup build matrix
-        run: |
-          $matrix = '${{ toJSON(env.build-targets) }}' | ConvertFrom-Json
-          echo $matrix
+  # setup:
+  #   runs-on: Ubuntu-latest
+  #   outputs:
+  #     matrix: ${{ steps.outputs.setup-matrix }}
+  #   steps:
+  #     - id: setup-matrix
+  #       name: setup build matrix
+  #       run: |
+  #         $matrix = '${{ toJSON(env.build-targets) }}' | ConvertFrom-Json
+  #         echo $matrix
 
-          # TODO Combine json objects
+  #         # TODO Combine json objects
 
-          $matrixJson = $matrix | ConvertTo-Json
-          echo "::set-output name=matrix::$matrixJson"
-        shell: pwsh
-        env:
-          build-targets:
-            os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
-            build-target: [ Android ]
-            include:
-              - os: [ self-hosted, windows ]
-                build-target: [ StandaloneWindows64, WSAPlayer ]
+  #         $matrixJson = $matrix | ConvertTo-Json
+  #         echo "::set-output name=matrix::$matrixJson"
+  #       shell: pwsh
+  #       env:
 
   validate:
-    needs: setup
+    #needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: '${{ fromJSON(needs.setup.outputs.matrix) }}'
+      matrix:
+        os: [ [self-hosted, windows], [self-hosted, macos] ] #[ubuntu-latest]
+        build-target: [ Android ]
+        include:
+          - os: [ self-hosted, windows ]
+            build-target: [ StandaloneWindows64, WSAPlayer ]
 
     outputs:
       matrix: ${{ steps.set-build-matrix.outputs.matrix }}
