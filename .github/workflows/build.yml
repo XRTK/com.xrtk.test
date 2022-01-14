@@ -118,7 +118,8 @@ jobs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
 
     steps:
-      - run: |
+      - id: setup-matrix
+        run: |
           echo '${{ needs.setup.outputs.matrix }}'
           echo '${{ needs.validate.outputs.windows-editor-path }}'
           echo '${{ needs.validate.outputs.windows-project-path }}'
@@ -130,12 +131,10 @@ jobs:
         shell: pwsh
 
   build:
-    needs:
-      - setup
-      - validate
+    needs: setup-build-matrix
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.setup-build-matrix.outputs.matrix) }}
 
       max-parallel: 1
 
