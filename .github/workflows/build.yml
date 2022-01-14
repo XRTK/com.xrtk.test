@@ -19,18 +19,6 @@ jobs:
   setup:
     runs-on: Ubuntu-latest
 
-    strategy:
-      matrix:
-        includes:
-          - os: [[self-hosted],[windows]]
-            build-targets: [Android,Standalone64,WSAPlayer]
-            editor-path: ''
-            project-path: ''
-          - os: [[self-hosted],[macos]]
-            build-targets: [Android]
-            editor-path: ''
-            project-path: ''
-
     outputs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
 
@@ -39,9 +27,7 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixJson = '${{ toJSON(matrix) }}'
-          echo $matrixJson
-          #$matrixJson = '{"includes":[{"os":["self-hosted","windows"],"built-targets":["Android","StandaloneWindows64","WSAPlayer"],"editor-path":"","project-path":""},{"os":["self-hosted","macos"],"built-targets":["Android"],"editor-path":"","project-path":""}]}'
+          $matrixJson = '{"includes":[{"os":[["self-hosted"],["windows"]],"build-targets":["Android","Standalone64","WSAPlayer"],"editor-path":"","project-path":""},{"os":[["self-hosted"],["macos"]],"build-targets":["Android"],"editor-path":"","project-path":""}]}'
 
           $matrix = $matrixJson | ConvertFrom-Json
           #echo $matrix
