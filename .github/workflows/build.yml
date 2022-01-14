@@ -29,9 +29,7 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixPath = '**/**/matrix.json'
-          $matrixJson = (Get-Content $matrixPath -Raw)
-          echo $matrixJson
+          $matrixJson = '[{"os":["self-hosted","windows"],"built-targets":["Android","StandaloneWindows64","WSAPlayer"],"editor-path":"","project-path":""},{"os":["self-hosted","macos"],"built-targets":["Android"],"editor-path":"","project-path":""}]'
 
           $matrix = $matrixJson | ConvertFrom-Json
           #echo $matrix
