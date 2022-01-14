@@ -34,10 +34,10 @@ jobs:
         name: setup build matrix
         run: |
           $matrixJson = '${{ toJSON(matrix) }}'
-          echo $matrixJson
+          #echo $matrixJson
 
           $matrix = $matrixJson | ConvertFrom-Json
-          echo $matrix
+          #echo $matrix
 
           # TODO Combine json objects
 
