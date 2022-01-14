@@ -26,16 +26,8 @@ jobs:
       - id: setup-matrix
         name: setup build matrix
         run: |
-          echo "matrix validation test"
           $matrixJson = '{"include":[{"os":"windows","buildTargets":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":"macos","buildTargets":["Android"],"editorPath":"","projectPath":""}]}'
-
-          $matrix = $matrixJson | ConvertFrom-Json -Depth 5
-          #echo $matrix
-
-          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
           $matrixJson.replace('"','\"')
-          echo $matrixJson
-
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
@@ -110,9 +102,7 @@ jobs:
 
   setup-build-matrix:
     runs-on: Ubuntu-latest
-    needs:
-      - setup
-      - validate
+    needs: [setup, validate]
 
     outputs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
