@@ -27,7 +27,7 @@ jobs:
             build-target: [ StandaloneWindows64, WSAPlayer ]
 
     outputs:
-      matrix: ${{ steps.outputs.setup-matrix }}
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
 
     steps:
       - id: setup-matrix
