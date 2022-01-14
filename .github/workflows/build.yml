@@ -47,13 +47,12 @@ jobs:
       - name: echo matrix
         run: |
           echo '${{ needs.setup.outputs.matrix }}'
-          echo '${{ fromJSON(needs.setup.outputs.matrix) }}'
 
   validate:
     needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ needs.setup.outputs.matrix }}
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
       matrix: ${{ steps.set-build-matrix.outputs.matrix }}
