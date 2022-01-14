@@ -27,7 +27,7 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixJson = (Get-Content ./matrix.json -Raw)
+          $matrixJson = (Get-Content /.github/workflows/matrix.json -Raw)
           echo $matrixJson
 
           $matrix = $matrixJson | ConvertFrom-Json
