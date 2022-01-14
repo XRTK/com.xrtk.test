@@ -33,7 +33,7 @@ jobs:
       - id: setup-matrix
         name: setup build matrix
         run: |
-          $matrixJson = '${{ toJSON(env.build-targets) }}'
+          $matrixJson = '${{ toJSON(matrix) }}'
           echo $matrixJson
 
           $matrix = $matrixJson | ConvertFrom-Json
