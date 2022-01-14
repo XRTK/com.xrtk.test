@@ -52,8 +52,7 @@ jobs:
     needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        includes: ${{ fromJSON(needs.setup.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
       matrix: ${{ steps.set-build-matrix.outputs.matrix }}
