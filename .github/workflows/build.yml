@@ -35,7 +35,6 @@ jobs:
         run: |
           echo "matrix validation test"
           $matrixJson = '${{ toJSON(matrix) }}'
-          #echo $matrixJson
 
           $matrix = $matrixJson | ConvertFrom-Json
           #echo $matrix
@@ -43,6 +42,8 @@ jobs:
           # TODO Combine json objects
 
           $matrixJson = $matrix | ConvertTo-Json -Compress
+          echo $matrixJson
+
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
