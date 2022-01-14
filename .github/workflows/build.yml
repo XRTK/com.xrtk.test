@@ -27,7 +27,7 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixJson = '{"includes":[{"os":[["self-hosted"],["windows"]],"build-targets":["Android","Standalone64","WSAPlayer"],"editor-path":"","project-path":""},{"os":[["self-hosted"],["macos"]],"build-targets":["Android"],"editor-path":"","project-path":""}]}'
+          $matrixJson = '{"include":[{"os":[["self-hosted"],["windows"]],"build-targets":["Android","Standalone64","WSAPlayer"],"editor-path":"","project-path":""},{"os":[["self-hosted"],["macos"]],"build-targets":["Android"],"editor-path":"","project-path":""}]}'
 
           $matrix = $matrixJson | ConvertFrom-Json -Depth 5
           #echo $matrix
