@@ -29,10 +29,10 @@ jobs:
           echo "matrix validation test"
           $matrixJson = '{"includes":[{"os":[["self-hosted"],["windows"]],"build-targets":["Android","Standalone64","WSAPlayer"],"editor-path":"","project-path":""},{"os":[["self-hosted"],["macos"]],"build-targets":["Android"],"editor-path":"","project-path":""}]}'
 
-          $matrix = $matrixJson | ConvertFrom-Json
+          $matrix = $matrixJson | ConvertFrom-Json -Depth 3
           #echo $matrix
 
-          $matrixJson = $matrix | ConvertTo-Json -Compress
+          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 3
           $matrixJson.replace('"','\"')
           echo $matrixJson
 
@@ -52,7 +52,8 @@ jobs:
     needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+      matrix:
+        includes: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
       matrix: ${{ steps.set-build-matrix.outputs.matrix }}
@@ -70,7 +71,7 @@ jobs:
       - id: set-build-matrix
         name: set build matrix
         run: |
-          $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json
+          $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json -Depth 3
           echo $matrix
           $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
           $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
@@ -88,7 +89,7 @@ jobs:
           $matrix.editor-path = $editorPath
           $matrix.project-path = $projectPath
 
-          $matrixJson = $matrix | ConvertTo-Json -Compress
+          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 3
           $matrixJson.replace('"','\"')
           echo $matrixJson
 
