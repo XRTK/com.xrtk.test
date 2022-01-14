@@ -27,7 +27,7 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixJson = '{"include":[{"os":"windows","build-targets":["Android","Standalone64","WSAPlayer"],"editor-path":"","project-path":""},{"os":"macos","build-targets":["Android"],"editor-path":"","project-path":""}]}'
+          $matrixJson = '{"include":[{"os":"windows","buildTargets":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":"macos","buildTargets":["Android"],"editorPath":"","projectPath":""}]}'
 
           $matrix = $matrixJson | ConvertFrom-Json -Depth 5
           #echo $matrix
@@ -86,8 +86,8 @@ jobs:
             exit 1
           }
 
-          $matrix.editor-path = $editorPath
-          $matrix.project-path = $projectPath
+          $matrix.editorPath = $editorPath
+          $matrix.projectPath = $projectPath
 
           $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
           $matrixJson.replace('"','\"')
@@ -130,30 +130,30 @@ jobs:
 
     steps:
       - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Tests'
+        name: '${{ matrix.buildTarget }}-Tests'
         with:
-          name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ matrix.editor-path }}'
-          project-path: '${{ matrix.project-path }}'
-          build-target: '${{ matrix.build-target }}'
+          name: '${{ matrix.buildTarget }}-Tests'
+          editor-path: '${{ matrix.editorPath }}'
+          project-path: '${{ matrix.projectPath }}'
+          build-target: '${{ matrix.buildTarget }}'
           args: '-batchmode -runEditorTests'
 
       - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Build'
+        name: '${{ matrix.buildTarget }}-Build'
         with:
-          name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ matrix.editor-path }}'
-          project-path: '${{ matrix.project-path }}'
-          build-target: '${{ matrix.build-target }}'
+          name: '${{ matrix.buildTarget }}-Build'
+          editor-path: '${{ matrix.editorPath }}'
+          project-path: '${{ matrix.projectPath }}'
+          build-target: '${{ matrix.buildTarget }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
       - name: Zip Artifacts
         if: always()
         run: |
-          $artifacts = "${{ matrix.project-path }}/Builds"
+          $artifacts = "${{ matrix.projectPath }}/Builds"
 
           if (Test-Path -Path $artifacts) {
-            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip -Force
+            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.buildTarget }}-Artifacts.zip -Force
             Remove-Item $artifacts -Force -Recurse
           }
         shell: pwsh
@@ -162,8 +162,8 @@ jobs:
         name: Upload Artifacts
         if: always()
         with:
-          name: '${{ matrix.build-target }}-Artifacts'
-          path: '${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip'
+          name: '${{ matrix.buildTarget }}-Artifacts'
+          path: '${{ github.workspace }}/${{ matrix.buildTarget }}-Artifacts.zip'
 
   publish:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
