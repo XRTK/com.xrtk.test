@@ -19,6 +19,18 @@ jobs:
   setup:
     runs-on: Ubuntu-latest
 
+    strategy:
+      matrix:
+        includes:
+          - os: [[self-hosted],[windows]]
+            build-targets: [Android,Standalone64,WSAPlayer]
+            editor-path: ''
+            project-path: ''
+          - os: [[self-hosted],[macos]]
+            build-targets: [Android]
+            editor-path: ''
+            project-path: ''
+
     outputs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
 
@@ -27,6 +39,8 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
+          $matrixTest = '${{ toJSON(matrix) }}'
+          echo $matrixTest
           $matrixJson = '{"includes":[{"os":["self-hosted","windows"],"built-targets":["Android","StandaloneWindows64","WSAPlayer"],"editor-path":"","project-path":""},{"os":["self-hosted","macos"],"built-targets":["Android"],"editor-path":"","project-path":""}]}'
 
           $matrix = $matrixJson | ConvertFrom-Json
@@ -52,7 +66,16 @@ jobs:
     needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+      matrix:
+        includes:
+          - os: [[self-hosted],[windows]]
+            build-targets: [Android,Standalone64,WSAPlayer]
+            editor-path: ''
+            project-path: ''
+          - os: [[self-hosted],[macos]]
+            build-targets: [Android]
+            editor-path: ''
+            project-path: ''
 
     outputs:
       matrix: ${{ steps.set-build-matrix.outputs.matrix }}
@@ -71,6 +94,7 @@ jobs:
         name: set build matrix
         run: |
           $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json
+          echo $matrix
           $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
           $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
 
