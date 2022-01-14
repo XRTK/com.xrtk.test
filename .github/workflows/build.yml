@@ -27,7 +27,7 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixPath = '**/**/matrix.json'
+          $matrixPath = '**/**/workflows/matrix.json'
           $matrixJson = (Get-Content $matrixPath -Raw)
           echo $matrixJson
 
