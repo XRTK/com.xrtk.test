@@ -55,8 +55,8 @@ jobs:
     steps:
       - name: echo matrix
         run: |
-          echo ${{ needs.setup.outputs.matrix }}
-          #echo '${{ fromJSON(needs.setup.outputs.matrix) }}'
+          echo '${{ needs.setup.outputs.matrix }}'
+          echo '${{ fromJSON(needs.setup.outputs.matrix) }}'
 
   validate:
     needs: setup
