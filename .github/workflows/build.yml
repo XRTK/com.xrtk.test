@@ -16,55 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup:
-    runs-on: Ubuntu-latest
-
-    strategy:
-      matrix:
-        includes:
-          - os: [[self-hosted],[windows]]
-            build-targets: [Android,Standalone64,WSAPlayer]
-            editor-path: ''
-            project-path: ''
-          - os: [[self-hosted],[macos]]
-            build-targets: [Android]
-            editor-path: ''
-            project-path: ''
-
-    outputs:
-      matrix: ${{ steps.setup-matrix.outputs.matrix }}
-
-    steps:
-      - id: setup-matrix
-        name: setup build matrix
-        run: |
-          echo "matrix validation test"
-          $matrixTest = '${{ toJSON(matrix) }}'
-          echo $matrixTest
-          $matrixJson = '{"includes":[{"os":["self-hosted","windows"],"built-targets":["Android","StandaloneWindows64","WSAPlayer"],"editor-path":"","project-path":""},{"os":["self-hosted","macos"],"built-targets":["Android"],"editor-path":"","project-path":""}]}'
-
-          $matrix = $matrixJson | ConvertFrom-Json
-          #echo $matrix
-
-          $matrixJson = $matrix | ConvertTo-Json -Compress
-          $matrixJson.replace('"','\"')
-          echo $matrixJson
-
-          echo "::set-output name=matrix::$matrixJson"
-        shell: pwsh
-
-  validate-matrix:
-    needs: setup
-    runs-on: Ubuntu-latest
-
-    steps:
-      - name: echo matrix
-        run: |
-          echo '${{ needs.setup.outputs.matrix }}'
-
   validate:
-    needs: setup
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.includes.os }}
     strategy:
       matrix:
         includes:
@@ -108,8 +61,8 @@ jobs:
             exit 1
           }
 
-          $matrix.editor-path = $editorPath
-          $matrix.project-path = $projectPath
+          $matrix.includes.editor-path = $editorPath
+          $matrix.includes.project-path = $projectPath
 
           $matrixJson = $matrix | ConvertTo-Json -Compress
           $matrixJson.replace('"','\"')
@@ -144,7 +97,7 @@ jobs:
 
   build:
     needs: validate
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.includes.os }}
     strategy:
       matrix: ${{ fromJSON(needs.validate.outputs.matrix) }}
 
@@ -152,30 +105,30 @@ jobs:
 
     steps:
       - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Tests'
+        name: '${{ matrix.includes.build-target }}-Tests'
         with:
-          name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ matrix.editor-path }}'
-          project-path: '${{ matrix.project-path }}'
-          build-target: '${{ matrix.build-target }}'
+          name: '${{ matrix.includes.build-target }}-Tests'
+          editor-path: '${{ matrix.includes.editor-path }}'
+          project-path: '${{ matrix.includes.project-path }}'
+          build-target: '${{ matrix.includes.build-target }}'
           args: '-batchmode -runEditorTests'
 
       - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Build'
+        name: '${{ matrix.includes.build-target }}-Build'
         with:
-          name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ matrix.editor-path }}'
-          project-path: '${{ matrix.project-path }}'
-          build-target: '${{ matrix.build-target }}'
+          name: '${{ matrix.includes.build-target }}-Build'
+          editor-path: '${{ matrix.includes.editor-path }}'
+          project-path: '${{ matrix.includes.project-path }}'
+          build-target: '${{ matrix.includes.build-target }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
       - name: Zip Artifacts
         if: always()
         run: |
-          $artifacts = "${{ matrix.project-path }}/Builds"
+          $artifacts = "${{ matrix.includes.project-path }}/Builds"
 
           if (Test-Path -Path $artifacts) {
-            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip -Force
+            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.includes.build-target }}-Artifacts.zip -Force
             Remove-Item $artifacts -Force -Recurse
           }
         shell: pwsh
@@ -184,8 +137,8 @@ jobs:
         name: Upload Artifacts
         if: always()
         with:
-          name: '${{ matrix.build-target }}-Artifacts'
-          path: '${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip'
+          name: '${{ matrix.includes.build-target }}-Artifacts'
+          path: '${{ github.workspace }}/${{ matrix.includes.build-target }}-Artifacts.zip'
 
   publish:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
