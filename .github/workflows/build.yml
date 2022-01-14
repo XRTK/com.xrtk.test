@@ -27,7 +27,8 @@ jobs:
         name: setup build matrix
         run: |
           echo "matrix validation test"
-          $matrixJson = (Get-Content '${{ **/**/matrix.json }}' -Raw)
+          $matrixPath = '${{ **/**/matrix.json }}'
+          $matrixJson = (Get-Content $matrixPath -Raw)
           echo $matrixJson
 
           $matrix = $matrixJson | ConvertFrom-Json
