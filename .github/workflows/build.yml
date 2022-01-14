@@ -102,7 +102,7 @@ jobs:
 
   setup-build-matrix:
     runs-on: Ubuntu-latest
-    needs: [setup, validate]
+    needs: [validate, setup]
 
     outputs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
@@ -110,14 +110,30 @@ jobs:
     steps:
       - id: setup-matrix
         run: |
-          echo '${{ needs.setup.outputs.matrix }}'
           echo '${{ needs.validate.outputs.windows-editor-path }}'
           echo '${{ needs.validate.outputs.windows-project-path }}'
           echo '${{ needs.validate.outputs.macos-editor-path }}'
           echo '${{ needs.validate.outputs.macos-project-path }}'
+          echo '${{ needs.setup.outputs.matrix }}'
 
-          $matrix = '${{ needs.setup.outputs.matrix }}' | ConvertFrom-Json -Depth 5
-          echo $matrix
+          $include = '${{ needs.setup.outputs.matrix }}' | ConvertFrom-Json -Depth 5
+          echo $include
+
+          foreach ($item in $includes) {
+            if ($item.os -eq 'windows') {
+              $item.editorPath = '${{ needs.validate.outputs.windows-editor-path }}'
+              $item.projectPath = '${{ needs.validate.outputs.windows-project-path }}'
+            }
+
+            if ($item.os -eq 'macos') {
+              $item.editorPath = '${{ needs.validate.outputs.macos-editor-path }}'
+              $item.projectPath = '${{ needs.validate.outputs.macos-project-path }}'
+            }
+          }
+
+          $matrixJson = $include | ConvertTo-Json -Compace -Depth 5
+          $matrixJson.replace('"','\"')
+          echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
   build:
