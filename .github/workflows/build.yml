@@ -39,15 +39,6 @@ jobs:
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
-  validate-matrix:
-    needs: setup
-    runs-on: Ubuntu-latest
-
-    steps:
-      - name: echo matrix
-        run: |
-          echo '${{ needs.setup.outputs.matrix }}'
-
   validate:
     needs: setup
     runs-on: ${{ matrix.os }}
@@ -56,7 +47,10 @@ jobs:
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
-      matrix: ${{ steps.set-build-matrix.outputs.matrix }}
+      windows-editor-path: ${{ steps.set-build-matrix.outputs.matrix.windows-editor-path }}
+      windows-project-path: ${{ steps.set-build-matrix.outputs.matrix.windows-project-path }}
+      macos-editor-path: ${{ steps.set-build-matrix.outputs.matrix.macos-editor-path }}
+      macos-project-path: ${{ steps.set-build-matrix.outputs.matrix.macos-project-path }}
 
     steps:
       - uses: actions/checkout@v2
@@ -72,7 +66,6 @@ jobs:
         name: set build matrix
         run: |
           $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json -Depth 5
-          echo $matrix
           $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
           $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
 
@@ -86,14 +79,9 @@ jobs:
             exit 1
           }
 
-          $matrix.editorPath = $editorPath
-          $matrix.projectPath = $projectPath
+          echo "::set-output name=${{ matrix.os }}-editor-path::$editorPath"
+          echo "::set-output name=${{ matrix.os }}-project-path::$projectPath"
 
-          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
-          $matrixJson.replace('"','\"')
-          echo $matrixJson
-
-          echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
       - uses: xrtk/unity-action@main
@@ -120,11 +108,34 @@ jobs:
           }
         shell: pwsh
 
+  setup-build-matrix:
+    runs-on: Ubuntu-latest
+    needs:
+      - setup
+      - validate
+
+    outputs:
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
+
+    steps:
+      - run: |
+          echo '${{ needs.setup.outputs.matrix }}'
+          echo '${{ needs.validate.outputs.windows-editor-path }}'
+          echo '${{ needs.validate.outputs.windows-project-path }}'
+          echo '${{ needs.validate.outputs.macos-editor-path }}'
+          echo '${{ needs.validate.outputs.macos-project-path }}'
+
+          $matrix = '${{ needs.setup.outputs.matrix }}' | ConvertFrom-Json -Depth 5
+          echo $matrix
+        shell: pwsh
+
   build:
-    needs: validate
+    needs:
+      - setup
+      - validate
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ fromJSON(needs.validate.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
       max-parallel: 1
 
