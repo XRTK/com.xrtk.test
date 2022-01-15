@@ -114,16 +114,16 @@ jobs:
       - id: setup-matrix
         run: |
           $windowsMatrix = '${{ needs.validate.outputs.windows }}' | ConvertFrom-Json -Depth 5
-          $windows = '$windowsMatrix.os'
+          $windows = "$windowsMatrix.os"
           $windowsTargets =  $windowsMatrix.buildTargets | ConvertTo-Json -Compress -Depth 3
-          $windowsEditor = '$windowsMatrix.editorPath'
-          $windowsProject = '$windowsMatrix.projectPath'
+          $windowsEditor = "$windowsMatrix.editorPath"
+          $windowsProject = "$windowsMatrix.projectPath"
 
           $macosMatrix = '${{ needs.validate.outputs.macos }}' | ConvertFrom-Json -Depth 5
-          $macos = '$macosMatrix.os'
+          $macos = "$macosMatrix.os"
           $macosTargets =  $macosMatrix.buildTargets | ConvertTo-Json -Compress -Depth 3
-          $macosEditor = '$macosMatrix.editorPath'
-          $macosProject = '$macosMatrix.projectPath'
+          $macosEditor = "$macosMatrix.editorPath"
+          $macosProject = "$macosMatrix.projectPath"
 
           $matrixJson = "{""include"":[{""build-target"":$windowsTargets,""os"":$windows,""editorPath"":$windowsEditor,""projectPath"":$windowsProject},{""build-target"":$macosTargets,""os"":$macos,""editorPath"":$macosEditor,""projectPath"":$macosProject}]}"
           echo $matrixJson
