@@ -16,31 +16,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup:
-    runs-on: Ubuntu-latest
-
-    outputs:
-      matrix: ${{ steps.setup-matrix.outputs.matrix }}
-
-    steps:
-      - id: setup-matrix
-        name: setup build matrix
-        run: |
-          $matrixJson = '{"include":[{"os":"windows","buildTargets":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":"macos","buildTargets":["Android"],"editorPath":"","projectPath":""}]}'
-          $matrixJson.replace('"','\"')
-          echo "::set-output name=matrix::$matrixJson"
-        shell: pwsh
-
   validate:
-    needs: setup
     runs-on: ${{ matrix.os }}
 
     strategy:
-      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+      matrix: [windows,macos]
 
     outputs:
-      windows: ${{ steps.set-paths.outputs.windows }}
-      macos: ${{ steps.set-paths.outputs.macos }}
+      windows-editor-path: ${{ steps.set-paths.outputs.windows-editor-path }}
+      windows-project-path: ${{ steps.set-paths.outputs.windows-project-path }}
+      macos-editor-path: ${{ steps.set-paths.outputs.macos-editor-path }}
+      macos-project-path: ${{ steps.set-paths.outputs.macos-project-path }}
 
     steps:
       - uses: actions/checkout@v2
@@ -55,7 +41,6 @@ jobs:
       - id: set-paths
         name: set build matrix
         run: |
-          $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json -Depth 5
           $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
           $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
 
@@ -69,14 +54,11 @@ jobs:
             exit 1
           }
 
-          $matrix.editorPath = $editorPath
-          $matrix.projectPath = $projectPath
+          $editorPathName = '${{ matrix.os }}-editor-path'
+          $projectPathname = '${{ matrix.os }}-project-path'
 
-          $varName = '${{ matrix.os }}'
-
-          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
-          $matrixJson.replace('"','\"')
-          echo "::set-output name=$varName::$matrixJson"
+          echo "::set-output name=$editorPathName::$editorPath"
+          echo "::set-output name=$projectPathname::$projectPath"
         shell: pwsh
 
       - uses: xrtk/unity-action@main
@@ -103,40 +85,20 @@ jobs:
           }
         shell: pwsh
 
-  setup-build-matrix:
-    runs-on: Ubuntu-latest
-    needs: validate
-
-    outputs:
-      matrix: ${{ steps.setup-matrix.outputs.matrix }}
-
-    steps:
-      - id: setup-matrix
-        run: |
-          $windowsMatrix = '${{ needs.validate.outputs.windows }}' | ConvertFrom-Json -Depth 5
-          $windows = $windowsMatrix.os
-          $windowsTargets =  $windowsMatrix.buildTargets | ConvertTo-Json -Compress -Depth 3
-          $windowsEditor = $windowsMatrix.editorPath
-          $windowsProject = $windowsMatrix.projectPath
-
-          $macosMatrix = '${{ needs.validate.outputs.macos }}' | ConvertFrom-Json -Depth 5
-          $macos = $macosMatrix.os
-          $macosTargets =  $macosMatrix.buildTargets | ConvertTo-Json -Compress -Depth 3
-          $macosEditor = $macosMatrix.editorPath
-          $macosProject = $macosMatrix.projectPath
-
-          $matrixJson = "{""include"":[{""build-target"":$windowsTargets,""os"":[""$windows""],""editorPath"":""$windowsEditor"",""projectPath"":""$windowsProject""},{""build-target"":$macosTargets,""os"":[""$macos""],""editorPath"":""$macosEditor"",""projectPath"":""$macosProject""}]}"
-          $matrixJsonEsc = $matrixJson.replace("\","\\")
-          $matrixJsonEsc.replace('"','\"')
-          echo $matrixJsonEsc
-          echo "::set-output name=matrix::$matrixJsonEsc"
-        shell: pwsh
-
   build:
-    needs: setup-build-matrix
+    needs: validate
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ fromJSON(needs.setup-build-matrix.outputs.matrix) }}
+      matrix:
+        include:
+          - build-target: [Android,WindowsStandalone64,WSAPlayer]
+            os: windows
+            editor-path: ${{ needs.validate.outputs.windows-editor-path }}
+            project-path: ${{ needs.validate.outputs.windows-project-path }}
+          - build-target: [Android]
+            os: macos
+            editor-path: ${{ needs.validate.outputs.macos-editor-path }}
+            project-path: ${{ needs.validate.outputs.macos-project-path }}
 
       max-parallel: 1
 
@@ -145,8 +107,8 @@ jobs:
         name: '${{ matrix.build-target }}-Tests'
         with:
           name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ matrix.editorPath }}'
-          project-path: '${{ matrix.projectPath }}'
+          editor-path: '${{ matrix.editor-path }}'
+          project-path: '${{ matrix.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-batchmode -runEditorTests'
 
@@ -154,15 +116,15 @@ jobs:
         name: '${{ matrix.build-target }}-Build'
         with:
           name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ matrix.editorPath }}'
-          project-path: '${{ matrix.projectPath }}'
+          editor-path: '${{ matrix.editor-path }}'
+          project-path: '${{ matrix.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
       - name: Zip Artifacts
         if: always()
         run: |
-          $artifacts = "${{ matrix.projectPath }}/Builds"
+          $artifacts = "${{ matrix.project-path }}/Builds"
 
           if (Test-Path -Path $artifacts) {
             Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip -Force
