@@ -114,12 +114,12 @@ jobs:
       - id: setup-matrix
         run: |
           $windows = '${{ needs.validate.outputs.windows }}'
-          $macos = '${{ needs.validate.outputs.windows }}'
+          $macos = '${{ needs.validate.outputs.macos }}'
 
           echo $windows
           echo $macos
 
-          $matrix = '{\"include\":[$windows,$macos]}'
+          $matrix = '{\"include\":[`$windows`,`$macos`]}'
           echo $matrix
 
           echo "::set-output name=matrix::$matrix"
