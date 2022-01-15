@@ -18,16 +18,17 @@ concurrency:
 jobs:
   validate:
     runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
-        os: [windows,macos]
-
-    outputs:
-      windows-editor-path: ${{ steps.set-paths.outputs.windows-editor-path }}
-      windows-project-path: ${{ steps.set-paths.outputs.windows-project-path }}
-      macos-editor-path: ${{ steps.set-paths.outputs.macos-editor-path }}
-      macos-project-path: ${{ steps.set-paths.outputs.macos-project-path }}
+        include:
+          - build-target: Android
+            os: windows
+          - build-target: StandaloneWindows64
+            os: windows
+          - build-target: WSAPlayer
+            os: windows
+          - build-target: Android
+            os: macos
 
     steps:
       - uses: actions/checkout@v2
@@ -37,29 +38,6 @@ jobs:
       - id: unity-validate
         name: Unity Editor Validation
         uses: xrtk/unity-validate@main
-
-      - id: set-paths
-        name: set build matrix
-        run: |
-          $editorPath = '${{ steps.unity-validate.outputs.editor-path }}'
-          $projectPath = '${{ steps.unity-validate.outputs.project-path }}'
-
-          if ([string]::IsNullOrEmpty($editorPath)) {
-            echo "failed to find a valid editor path"
-            exit 1
-          }
-
-          if ([string]::IsNullOrEmpty($projectPath)) {
-            echo "failed to find a valid project path"
-            exit 1
-          }
-
-          $editorPathName = '${{ matrix.os }}-editor-path'
-          $projectPathname = '${{ matrix.os }}-project-path'
-
-          echo "::set-output name=$editorPathName::$editorPath"
-          echo "::set-output name=$projectPathname::$projectPath"
-        shell: pwsh
 
       - uses: xrtk/unity-action@main
         name: Project Validation
@@ -85,38 +63,12 @@ jobs:
           }
         shell: pwsh
 
-  build:
-    needs: validate
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - build-target: Android
-            os: windows
-            editor-path: ${{ needs.validate.outputs.windows-editor-path }}
-            project-path: ${{ needs.validate.outputs.windows-project-path }}
-          - build-target: StandaloneWindows64
-            os: windows
-            editor-path: ${{ needs.validate.outputs.windows-editor-path }}
-            project-path: ${{ needs.validate.outputs.windows-project-path }}
-          - build-target: WSAPlayer
-            os: windows
-            editor-path: ${{ needs.validate.outputs.windows-editor-path }}
-            project-path: ${{ needs.validate.outputs.windows-project-path }}
-          - build-target: Android
-            os: macos
-            editor-path: ${{ needs.validate.outputs.macos-editor-path }}
-            project-path: ${{ needs.validate.outputs.macos-project-path }}
-
-      max-parallel: 1
-
-    steps:
       - uses: xrtk/unity-action@main
         name: '${{ matrix.build-target }}-Tests'
         with:
           name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ matrix.editor-path }}'
-          project-path: '${{ matrix.project-path }}'
+          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
+          project-path: '${{ steps.unity-validate.outputs.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-batchmode -runEditorTests'
 
@@ -124,8 +76,8 @@ jobs:
         name: '${{ matrix.build-target }}-Build'
         with:
           name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ matrix.editor-path }}'
-          project-path: '${{ matrix.project-path }}'
+          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
+          project-path: '${{ steps.unity-validate.outputs.project-path }}'
           build-target: '${{ matrix.build-target }}'
           args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
 
@@ -144,8 +96,8 @@ jobs:
         name: Upload Artifacts
         if: always()
         with:
-          name: '${{ matrix.build-target }}-Artifacts'
-          path: '${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip'
+          name: '${{ matrix.os }}-${{ matrix.build-target }}-Artifacts'
+          path: '${{ github.workspace }}/${{ matrix.os }}-${{ matrix.build-target }}-Artifacts.zip'
 
   publish:
     if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
