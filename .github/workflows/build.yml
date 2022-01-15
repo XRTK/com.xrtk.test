@@ -119,7 +119,7 @@ jobs:
           echo $windows
           echo $macos
 
-          $matrix = "{\\\"include\\\":[$windows,$macos]}"
+          $matrix = "{\""include\"":[$windows,$macos]}"
           echo $matrix
 
           echo "::set-output name=matrix::$matrix"
