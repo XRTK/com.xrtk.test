@@ -39,10 +39,10 @@ jobs:
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
-      windows-editor-path: ${{ steps.set-paths.outputs.matrix.windows-editor-path }}
-      windows-project-path: ${{ steps.set-paths.outputs.matrix.windows-project-path }}
-      macos-editor-path: ${{ steps.set-paths.outputs.matrix.macos-editor-path }}
-      macos-project-path: ${{ steps.set-paths.outputs.matrix.macos-project-path }}
+      windows-editor-path: ${{ steps.set-paths.outputs.windows-editor-path }}
+      windows-project-path: ${{ steps.set-paths.outputs.windows-project-path }}
+      macos-editor-path: ${{ steps.set-paths.outputs.macos-editor-path }}
+      macos-project-path: ${{ steps.set-paths.outputs.macos-project-path }}
 
     steps:
       - uses: actions/checkout@v2
@@ -134,7 +134,7 @@ jobs:
             }
           }
 
-          $matrixJson = $include | ConvertTo-Json -Compact -Depth 5
+          $matrixJson = $include | ConvertTo-Json -Compress -Depth 5
           $matrixJson.replace('"','\"')
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
