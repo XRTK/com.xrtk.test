@@ -32,7 +32,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: true
           clean: true
 
       - id: unity-validate
@@ -112,6 +111,8 @@ jobs:
             os: macos
             editor-path: ${{ needs.validate.outputs.macos-editor-path }}
             project-path: ${{ needs.validate.outputs.macos-project-path }}
+
+      max-parallel: 1
 
     steps:
       - uses: xrtk/unity-action@main
