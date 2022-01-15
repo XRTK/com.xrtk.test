@@ -107,10 +107,6 @@ jobs:
             os: macos
             editor-path: ${{ needs.validate.outputs.macos-editor-path }}
             project-path: ${{ needs.validate.outputs.macos-project-path }}
-          - build-target: StandaloneOSX
-            os: macos
-            editor-path: ${{ needs.validate.outputs.macos-editor-path }}
-            project-path: ${{ needs.validate.outputs.macos-project-path }}
 
       max-parallel: 1
 
