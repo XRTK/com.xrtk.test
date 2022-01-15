@@ -21,14 +21,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - build-target: Android
-            os: windows
-          - build-target: StandaloneWindows64
-            os: windows
-          - build-target: WSAPlayer
-            os: windows
-          - build-target: Android
-            os: macos
+          - os: windows
+            build-target: Android
+          - os: windows
+            build-target: StandaloneWindows64
+          - os: windows
+            build-target: WSAPlayer
+          - os: macos
+            build-target: Android
 
     steps:
       - uses: actions/checkout@v2
