@@ -20,7 +20,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      matrix: [windows,macos]
+      matrix:
+        os: [windows,macos]
 
     outputs:
       windows-editor-path: ${{ steps.set-paths.outputs.windows-editor-path }}
