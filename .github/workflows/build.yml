@@ -92,11 +92,19 @@ jobs:
     strategy:
       matrix:
         include:
-          - build-target: [Android,WindowsStandalone64,WSAPlayer]
+          - build-target: Android
             os: windows
             editor-path: ${{ needs.validate.outputs.windows-editor-path }}
             project-path: ${{ needs.validate.outputs.windows-project-path }}
-          - build-target: [Android]
+          - build-target: WindowsStandalone64
+            os: windows
+            editor-path: ${{ needs.validate.outputs.windows-editor-path }}
+            project-path: ${{ needs.validate.outputs.windows-project-path }}
+          - build-target: WSAPlayer
+            os: windows
+            editor-path: ${{ needs.validate.outputs.windows-editor-path }}
+            project-path: ${{ needs.validate.outputs.windows-project-path }}
+          - build-target: Android
             os: macos
             editor-path: ${{ needs.validate.outputs.macos-editor-path }}
             project-path: ${{ needs.validate.outputs.macos-project-path }}
