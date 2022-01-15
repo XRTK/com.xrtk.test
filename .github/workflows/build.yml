@@ -125,7 +125,7 @@ jobs:
           $macosEditor = $macosMatrix.editorPath
           $macosProject = $macosMatrix.projectPath
 
-          $matrixJson = "{""include"":[{""build-target"":$windowsTargets,""os"":""$windows"",""editorPath"":""$windowsEditor"",""projectPath"":""$windowsProject""},{""build-target"":$macosTargets,""os"":""$macos"",""editorPath"":""$macosEditor"",""projectPath"":""$macosProject""}]}"
+          $matrixJson = "{""include"":[{""build-target"":$windowsTargets,""os"":[""$windows""],""editorPath"":""$windowsEditor"",""projectPath"":""$windowsProject""},{""build-target"":$macosTargets,""os"":[""$macos""],""editorPath"":""$macosEditor"",""projectPath"":""$macosProject""}]}"
           $matrixJsonEsc = $matrixJson.replace("\","\\")
           $matrixJsonEsc.replace('"','\"')
           echo $matrixJsonEsc
