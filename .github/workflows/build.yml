@@ -126,8 +126,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [self-hosted,windows,macos]
-        include: ${{ fromJSON(needs.setup-build-matrix.outputs.matrix) }}
+        os: ${{ fromJSON(needs.setup.outputs.matrix.include.os) }}
+        build-target: ${{ fromJSON(needs.setup.outputs.matrix.include.build-target) }}
+        editor-path: ${{ fromJSON(needs.setup.outputs.matrix.include.editor-path) }}
+        project-path: ${{ fromJSON(needs.setup.outputs.matrix.include.project-path) }}
 
       max-parallel: 1
 
