@@ -124,12 +124,7 @@ jobs:
   build:
     needs: setup-build-matrix
     runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: ${{ fromJSON(needs.setup.outputs.matrix.include.os) }}
-        build-target: ${{ fromJSON(needs.setup.outputs.matrix.include.build-target) }}
-        editor-path: ${{ fromJSON(needs.setup.outputs.matrix.include.editor-path) }}
-        project-path: ${{ fromJSON(needs.setup.outputs.matrix.include.project-path) }}
+    strategy:  ${{ fromJSON(needs.setup-build-matrix.outputs.matrix) }}
 
       max-parallel: 1
 
