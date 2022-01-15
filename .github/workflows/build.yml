@@ -72,7 +72,7 @@ jobs:
           $matrix.editorPath = $editorPath
           $matrix.projectPath = $projectPath
 
-          $varName = '${{ matrix.os }}'
+          $varName = '${{ matrix.os[0] }}'
 
           $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
           $matrixJson.replace('"','\"')
