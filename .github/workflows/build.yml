@@ -71,7 +71,7 @@ jobs:
           $artifacts = "${{ matrix.project-path }}/Builds"
 
           if (Test-Path -Path $artifacts) {
-            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.build-target }}-Artifacts.zip -Force
+            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.build-target }}-Artifacts.zip -Force
             Remove-Item $artifacts -Force -Recurse
           }
         shell: pwsh
