@@ -119,10 +119,10 @@ jobs:
           echo $windows
           echo $macos
 
-          $matrix = "{\""include\"":[$windows,$macos]}"
-          echo $matrix
-
-          echo "::set-output name=matrix::$matrix"
+          $matrixJson = "{""include"":[$windows,$macos]}"
+          echo $matrixJson
+          $matrixJson.replace('"','\"')
+          echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
 
   build:
