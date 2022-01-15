@@ -19,6 +19,18 @@ jobs:
   setup:
     runs-on: Ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+        - os: [self-hosted,windows]
+          build-target: [Android,Standalone64,WSAPlayer]
+          editorPath: ''
+          projectPath: ''
+        - os: [self-hosted,macos]
+          build-target: [Android]
+          editorPath: ''
+          projectPath: ''
+
     outputs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
 
@@ -26,7 +38,7 @@ jobs:
       - id: setup-matrix
         name: setup build matrix
         run: |
-          $matrixJson = '{"include":[{"os":"windows","build-target":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":"macos","build-target":["Android"],"editorPath":"","projectPath":""}]}'
+          $matrixJson = '{"include":[{"os":["self-hosted","windows"],"build-target":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":["self-hosted","macos"],"build-target":["Android"],"editorPath":"","projectPath":""}]}'
           $matrixJson.replace('"','\"')
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
