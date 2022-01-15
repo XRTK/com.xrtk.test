@@ -26,7 +26,7 @@ jobs:
       - id: setup-matrix
         name: setup build matrix
         run: |
-          $matrixJson = '{"include":[{"os":["windows"],"build-target":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":["macos"],"build-target":["Android"],"editorPath":"","projectPath":""}]}'
+          $matrixJson = '{"include":[{"os":"windows","build-target":["Android","Standalone64","WSAPlayer"],"editorPath":"","projectPath":""},{"os":"macos","build-target":["Android"],"editorPath":"","projectPath":""}]}'
           $matrixJson.replace('"','\"')
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
@@ -72,7 +72,7 @@ jobs:
           $matrix.editorPath = $editorPath
           $matrix.projectPath = $projectPath
 
-          $varName = '${{ matrix.os[0] }}'
+          $varName = '${{ matrix.os }}'
 
           $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
           $matrixJson.replace('"','\"')
@@ -113,9 +113,17 @@ jobs:
     steps:
       - id: setup-matrix
         run: |
-          $windows = '${{ needs.validate.outputs.windows }}'
-          $macos = '${{ needs.validate.outputs.macos }}'
-          $matrixJson = "{""include"":[$windows,$macos]}"
+          $windows = '${{ needs.validate.outputs.windows.os }}'
+          $windowsTargets =  '${{ needs.validate.outputs.windows.build-target }}'
+          $windowsEditor = '${{ needs.validate.output.windows.editorPath }}'
+          $windowsProject = '${{ needs.validate.output.windows.projectPath }}'
+
+          $macos = '${{ needs.validate.outputs.macos.os }}'
+          $macosTargets =  '${{ needs.validate.outputs.macos.build-target }}'
+          $macosEditor = '${{ needs.validate.output.macos.editorPath }}'
+          $macosProject = '${{ needs.validate.output.macos.projectPath }}'
+
+          $matrixJson = "{""include"":[{""build-target"":$windowsTargets,""os"":$windows,""editorPath"":$windowsEditor,""projectPath"":$windowsProject},{""build-target"":$macosTargets,""os"":$macos,""editorPath"":$macosEditor,""projectPath"":$macosProject}]}"
           echo $matrixJson
           $matrixJson.replace('"','\"')
           echo "::set-output name=matrix::$matrixJson"
