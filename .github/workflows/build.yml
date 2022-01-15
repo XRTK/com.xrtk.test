@@ -39,10 +39,10 @@ jobs:
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
-      windows-editor-path: ${{ steps.set-build-matrix.outputs.matrix.windows-editor-path }}
-      windows-project-path: ${{ steps.set-build-matrix.outputs.matrix.windows-project-path }}
-      macos-editor-path: ${{ steps.set-build-matrix.outputs.matrix.macos-editor-path }}
-      macos-project-path: ${{ steps.set-build-matrix.outputs.matrix.macos-project-path }}
+      windows-editor-path: ${{ steps.set-paths.outputs.matrix.windows-editor-path }}
+      windows-project-path: ${{ steps.set-paths.outputs.matrix.windows-project-path }}
+      macos-editor-path: ${{ steps.set-paths.outputs.matrix.macos-editor-path }}
+      macos-project-path: ${{ steps.set-paths.outputs.matrix.macos-project-path }}
 
     steps:
       - uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
         name: Unity Editor Validation
         uses: xrtk/unity-validate@main
 
-      - id: set-build-matrix
+      - id: set-paths
         name: set build matrix
         run: |
           $matrix = '${{ toJSON(matrix) }}' | ConvertFrom-Json -Depth 5
@@ -71,8 +71,11 @@ jobs:
             exit 1
           }
 
-          echo "::set-output name=${{ matrix.os }}-editor-path::$editorPath"
-          echo "::set-output name=${{ matrix.os }}-project-path::$projectPath"
+          $editorPathName = '${{ matrix.os }}-editor-path'
+          $projectPathName = '${{ matrix.os }}-project-path'
+
+          echo "::set-output name=$editorPathName::$editorPath"
+          echo "::set-output name=$projectPathName::$projectPath"
 
         shell: pwsh
 
@@ -131,7 +134,7 @@ jobs:
             }
           }
 
-          $matrixJson = $include | ConvertTo-Json -Compace -Depth 5
+          $matrixJson = $include | ConvertTo-Json -Compact -Depth 5
           $matrixJson.replace('"','\"')
           echo "::set-output name=matrix::$matrixJson"
         shell: pwsh
