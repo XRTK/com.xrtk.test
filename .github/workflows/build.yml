@@ -113,23 +113,22 @@ jobs:
     steps:
       - id: setup-matrix
         run: |
-          echo '${{ needs.validate.outputs.windows-editor-path }}'
-          echo '${{ needs.validate.outputs.windows-project-path }}'
-          echo '${{ needs.validate.outputs.macos-editor-path }}'
-          echo '${{ needs.validate.outputs.macos-project-path }}'
           echo '${{ needs.setup.outputs.matrix }}'
-
           $include = '${{ needs.setup.outputs.matrix }}' | ConvertFrom-Json -Depth 5
           echo $include
 
           foreach ($item in $includes) {
             if ($item.os -eq 'windows') {
+              echo '${{ needs.validate.outputs.windows-editor-path }}'
               $item.editorPath = '${{ needs.validate.outputs.windows-editor-path }}'
+              echo '${{ needs.validate.outputs.windows-project-path }}'
               $item.projectPath = '${{ needs.validate.outputs.windows-project-path }}'
             }
 
             if ($item.os -eq 'macos') {
+              echo '${{ needs.validate.outputs.macos-editor-path }}'
               $item.editorPath = '${{ needs.validate.outputs.macos-editor-path }}'
+              echo '${{ needs.validate.outputs.macos-project-path }}'
               $item.projectPath = '${{ needs.validate.outputs.macos-project-path }}'
             }
           }
