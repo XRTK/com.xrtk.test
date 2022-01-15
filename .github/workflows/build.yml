@@ -39,10 +39,8 @@ jobs:
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
 
     outputs:
-      windows-editor-path: ${{ steps.set-paths.outputs.windows-editor-path }}
-      windows-project-path: ${{ steps.set-paths.outputs.windows-project-path }}
-      macos-editor-path: ${{ steps.set-paths.outputs.macos-editor-path }}
-      macos-project-path: ${{ steps.set-paths.outputs.macos-project-path }}
+      windows: ${{ steps.set-paths.outputs.windows }}
+      macos: ${{ steps.set-paths.outputs.macos }}
 
     steps:
       - uses: actions/checkout@v2
@@ -71,12 +69,14 @@ jobs:
             exit 1
           }
 
-          $editorPathName = '${{ matrix.os }}-editor-path'
-          $projectPathName = '${{ matrix.os }}-project-path'
+          $matrix.editorPath = $editorPath
+          $matrix.projectPath = $projectPath
 
-          echo "::set-output name=$editorPathName::$editorPath"
-          echo "::set-output name=$projectPathName::$projectPath"
+          $varName = '${{ matrix.os }}'
 
+          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 5
+          $matrixJson.replace('"','\"')
+          echo "::set-output name=$varName::$matrixJson"
         shell: pwsh
 
       - uses: xrtk/unity-action@main
@@ -105,7 +105,7 @@ jobs:
 
   setup-build-matrix:
     runs-on: Ubuntu-latest
-    needs: [validate, setup]
+    needs: validate
 
     outputs:
       matrix: ${{ steps.setup-matrix.outputs.matrix }}
@@ -113,29 +113,16 @@ jobs:
     steps:
       - id: setup-matrix
         run: |
-          echo '${{ needs.setup.outputs.matrix }}'
-          $include = '${{ needs.setup.outputs.matrix }}' | ConvertFrom-Json -Depth 5
-          echo $include
+          $windows = '${{ needs.validate.outputs.windows }}'
+          $macos = '${{ needs.validate.outputs.windows }}'
 
-          foreach ($item in $includes) {
-            if ($item.os -eq 'windows') {
-              echo '${{ needs.validate.outputs.windows-editor-path }}'
-              $item.editorPath = '${{ needs.validate.outputs.windows-editor-path }}'
-              echo '${{ needs.validate.outputs.windows-project-path }}'
-              $item.projectPath = '${{ needs.validate.outputs.windows-project-path }}'
-            }
+          echo $windows
+          echo $macos
 
-            if ($item.os -eq 'macos') {
-              echo '${{ needs.validate.outputs.macos-editor-path }}'
-              $item.editorPath = '${{ needs.validate.outputs.macos-editor-path }}'
-              echo '${{ needs.validate.outputs.macos-project-path }}'
-              $item.projectPath = '${{ needs.validate.outputs.macos-project-path }}'
-            }
-          }
+          $matrix = '{\"include\":[$windows,$macos]}'
+          echo $matrix
 
-          $matrixJson = $include | ConvertTo-Json -Compress -Depth 5
-          $matrixJson.replace('"','\"')
-          echo "::set-output name=matrix::$matrixJson"
+          echo "::set-output name=matrix::$matrix"
         shell: pwsh
 
   build:
