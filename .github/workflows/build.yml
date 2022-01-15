@@ -124,7 +124,8 @@ jobs:
   build:
     needs: setup-build-matrix
     runs-on: ${{ matrix.os }}
-    strategy:  ${{ fromJSON(needs.setup-build-matrix.outputs.matrix) }}
+    strategy:
+      matrix: ${{ fromJSON(needs.setup-build-matrix.outputs.matrix) }}
 
       max-parallel: 1
 
