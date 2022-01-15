@@ -115,13 +115,13 @@ jobs:
         run: |
           $windowsMatrix = '${{ needs.validate.outputs.windows }}' | ConvertFrom-Json -Depth 5
           $windows = $windowsMatrix.os
-          $windowsTargets =  $windowsMatrix.buildTargets | ConvertTo-Json -Depth 3
+          $windowsTargets =  $windowsMatrix.buildTargets | ConvertTo-Json -Compress -Depth 3
           $windowsEditor = $windowsMatrix.editorPath
           $windowsProject = $windowsMatrix.projectPath
 
           $macosMatrix = '${{ needs.validate.outputs.macos }}' | ConvertFrom-Json -Depth 5
           $macos = $macosMatrix.os
-          $macosTargets =  $macosMatrix.buildTargets | ConvertTo-Json -Depth 3
+          $macosTargets =  $macosMatrix.buildTargets | ConvertTo-Json -Compress -Depth 3
           $macosEditor = $macosMatrix.editorPath
           $macosProject = $macosMatrix.projectPath
 
