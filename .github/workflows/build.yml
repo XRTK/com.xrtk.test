@@ -126,10 +126,10 @@ jobs:
           $macosProject = $macosMatrix.projectPath
 
           $matrixJson = "{""include"":[{""build-target"":$windowsTargets,""os"":""$windows"",""editorPath"":""$windowsEditor"",""projectPath"":""$windowsProject""},{""build-target"":$macosTargets,""os"":""$macos"",""editorPath"":""$macosEditor"",""projectPath"":""$macosProject""}]}"
-          $matrixJson = $matrixJson.replace("\","\\")
-          $matrixJson = $matrixJson.replace('"','\"')
-          echo $matrixJson
-          echo "::set-output name=matrix::$matrixJson"
+          $matrixJsonEsc = $matrixJson.replace("\","\\")
+          $matrixJsonEsc.replace('"','\"')
+          echo $matrixJsonEsc
+          echo "::set-output name=matrix::$matrixJsonEsc"
         shell: pwsh
 
   build:
