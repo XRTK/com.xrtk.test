@@ -37,8 +37,8 @@ jobs:
 
       - name: Unity Editor Validation
         uses: xrtk/unity-build@development
-          with:
-            build-target: ${{ matrix.build-target }}
+        with:
+          build-target: ${{ matrix.build-target }}
 
   build-success:
     if: ${{ github.ref != 'refs/heads/main' || github.base_ref != 'main' }}
