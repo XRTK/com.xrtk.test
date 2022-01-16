@@ -35,7 +35,7 @@ jobs:
         with:
           clean: true
 
-      - name: Unity Editor Validation
+      - name: Unity Build (${{ matrix.build-target }})
         uses: xrtk/unity-build@development
         with:
           build-target: ${{ matrix.build-target }}
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: xrtk/upm-release@main
+      - uses: xrtk/upm-release@v1
         name: publish upm package
         with:
           upm-username: 'xrtk-build-bot'
