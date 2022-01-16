@@ -35,53 +35,10 @@ jobs:
         with:
           clean: true
 
-      - id: unity-validate
-        name: Unity Editor Validation
-        uses: xrtk/unity-validate@main
-
-      - uses: xrtk/unity-action@main
-        name: Project Validation
-        with:
-          name: 'project-validation'
-          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
-          project-path: '${{ steps.unity-validate.outputs.project-path }}'
-          args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.ValidateProject'
-
-      - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Tests'
-        with:
-          name: '${{ matrix.build-target }}-Tests'
-          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
-          project-path: '${{ steps.unity-validate.outputs.project-path }}'
-          build-target: '${{ matrix.build-target }}'
-          args: '-batchmode -runEditorTests'
-
-      - uses: xrtk/unity-action@main
-        name: '${{ matrix.build-target }}-Build'
-        with:
-          name: '${{ matrix.build-target }}-Build'
-          editor-path: '${{ steps.unity-validate.outputs.editor-path }}'
-          project-path: '${{ steps.unity-validate.outputs.project-path }}'
-          build-target: '${{ matrix.build-target }}'
-          args: '-quit -batchmode -executeMethod XRTK.Editor.BuildPipeline.UnityPlayerBuildTools.StartCommandLineBuild'
-
-      - name: Zip Artifacts
-        if: always()
-        run: |
-          $artifacts = "${{ steps.unity-validate.outputs.project-path }}/Builds"
-
-          if (Test-Path -Path $artifacts) {
-            Compress-Archive -Path "$artifacts/*" -DestinationPath ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.build-target }}-Artifacts.zip -Force
-            Remove-Item $artifacts -Force -Recurse
-          }
-        shell: pwsh
-
-      - uses: actions/upload-artifact@v2
-        name: Upload Artifacts
-        if: always()
-        with:
-          name: '${{ matrix.os }}-${{ matrix.build-target }}-Artifacts'
-          path: '${{ github.workspace }}/${{ matrix.os }}-${{ matrix.build-target }}-Artifacts.zip'
+      - name: Unity Editor Validation
+        uses: xrtk/unity-build@development
+          with:
+            build-target: ${{ matrix.build-target }}
 
   build-success:
     if: ${{ github.ref != 'refs/heads/main' || github.base_ref != 'main' }}
