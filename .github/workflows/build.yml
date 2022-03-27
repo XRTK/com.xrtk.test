@@ -59,7 +59,7 @@ jobs:
           upm-username: 'xrtk-build-bot'
           upm-email: 'xrtk-build-bot@xrtk.io'
           upm-server-address: 'http://upm.xrtk.io:4873'
-          upm-auth-token: '${{ secrets.UPM_CREDENTIALS }}'
+          upm-auth-token: '${{ secrets.UPM_TOKEN }}'
           github-username: 'XRTK-Build-Bot'
           github-pat: '${{ secrets.GIT_TOKEN }}'
           github-token: '${{ secrets.GITHUB_TOKEN }}'
