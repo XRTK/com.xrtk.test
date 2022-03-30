@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
- validate-editor-installation:
+  validate-editor-installation:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
