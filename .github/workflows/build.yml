@@ -16,9 +16,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  validate-editor-installation:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+          - os: macos
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          clean: true
+
+      - name: validate editor installation
+        uses: xrtk/unity-validate@main
+
+  build:
+    needs: validate-editor-installation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows
