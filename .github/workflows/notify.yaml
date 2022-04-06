@@ -1,0 +1,18 @@
+name: Notify Publush Success
+
+on:
+  workflow_run:
+    workflows: ["XRTK CI"]
+    types: [completed]
+
+jobs:
+  publish-on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - run: echo 'The triggering workflow passed'
+  publish-on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: echo 'The triggering workflow failed'
